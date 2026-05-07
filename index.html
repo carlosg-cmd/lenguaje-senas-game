@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #0f0c29;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .game-wrapper {
+    background: linear-gradient(135deg, #0f0c29 0%, #1a1040 50%, #0f0c29 100%);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  .header {
+    text-align: center;
+    padding: 20px 20px 10px;
+    position: relative;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.5px;
+    text-shadow: 0 0 30px rgba(167,139,250,0.5);
+  }
+
+  .header h1 span { color: #a78bfa; }
+
+  .header p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+  }
+
+  .stat-pill {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .stat-pill .icon { font-size: 16px; }
+  .stat-pill.timer { color: #fbbf24; border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.08); }
+  .stat-pill.score { color: #34d399; border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.08); }
+  .stat-pill.errors { color: #f87171; border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.08); }
+  .stat-pill.progress { color: #a78bfa; border-color: rgba(167,139,250,0.3); background: rgba(167,139,250,0.08); }
+
+  .progress-bar-wrap {
+    margin: 0 20px 10px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #a78bfa, #34d399);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    width: 0%;
+  }
+
+  .hint-bar {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+    padding: 0 20px;
+  }
+  .hint-bar strong { color: #a78bfa; }
+
+  .game-area {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 10px 20px;
+    gap: 0;
+    position: relative;
+    min-height: 400px;
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 2;
+    width: 120px;
+  }
+
+  .column-label {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+
+  .letter-card {
+    background: rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 5px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    user-select: none;
+  }
+
+  .letter-card:hover:not(.matched):not(.selected) {
+    background: rgba(167,139,250,0.15);
+    border-color: rgba(167,139,250,0.5);
+    transform: translateY(-1px);
+  }
+
+  .letter-card.selected {
+    background: rgba(167,139,250,0.25);
+    border-color: #a78bfa;
+    box-shadow: 0 0 12px rgba(167,139,250,0.4);
+    transform: scale(1.03);
+  }
+
+  .letter-card.matched {
+    background: rgba(52,211,153,0.15);
+    border-color: rgba(52,211,153,0.5);
+    cursor: default;
+    animation: matchPop 0.4s ease;
+  }
+
+  .letter-card.wrong {
+    animation: shake 0.4s ease;
+    background: rgba(248,113,113,0.2);
+    border-color: rgba(248,113,113,0.6);
+  }
+
+  @keyframes matchPop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  .letter-text {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+    width: 24px;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .sign-emoji {
+    font-size: 22px;
+    line-height: 1;
+    filter: grayscale(0.1);
+  }
+
+  .sign-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.45);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    flex: 1;
+    text-align: left;
+  }
+
+  .letter-matched-icon {
+    font-size: 14px;
+    margin-left: auto;
+    display: none;
+  }
+
+  .letter-card.matched .letter-matched-icon { display: block; }
+
+  .canvas-col {
+    flex: 1;
+    position: relative;
+    min-width: 80px;
+    max-width: 160px;
+  }
+
+  #lines-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .connection-line {
+    stroke: #a78bfa;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    opacity: 0.7;
+    fill: none;
+  }
+
+  .connection-line.matched {
+    stroke: #34d399;
+    opacity: 1;
+    stroke-width: 3;
+  }
+
+  .connection-line.wrong-line {
+    stroke: #f87171;
+    opacity: 1;
+    animation: fadeWrong 0.6s ease forwards;
+  }
+
+  @keyframes fadeWrong {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .control-btn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 22px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(124,58,237,0.4);
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,58,237,0.5); }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .btn-secondary:hover { background: rgba(255,255,255,0.13); color: #fff; }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 6px 20px 16px;
+    flex-wrap: wrap;
+  }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,12,41,0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal {
+    background: linear-gradient(135deg, #1e1b4b, #1a1040);
+    border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 20px;
+    padding: 32px 36px;
+    text-align: center;
+    max-width: 340px;
+    width: 90%;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+  }
+
+  .modal h2 {
+    font-size: 26px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .modal .emoji-big { font-size: 52px; margin-bottom: 12px; display: block; }
+
+  .modal p {
+    color: rgba(255,255,255,0.65);
+    font-size: 14px;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }
+
+  .modal .stars { font-size: 28px; margin: 12px 0; }
+
+  .modal .result-stats {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 16px 0;
+  }
+
+  .result-stat {
+    background: rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 8px 14px;
+    min-width: 70px;
+  }
+
+  .result-stat .val {
+    font-size: 20px;
+    font-weight: 900;
+    color: #fff;
+  }
+
+  .result-stat .lbl {
+    font-size: 10px;
+    color: rgba(255,255,255,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .confetti-piece {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 200;
+    animation: confettiFall linear forwards;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  .tooltip-sign {
+    position: fixed;
+    background: rgba(30,27,75,0.97);
+    border: 1px solid rgba(167,139,250,0.4);
+    border-radius: 12px;
+    padding: 10px 14px;
+    pointer-events: none;
+    z-index: 99;
+    display: none;
+    text-align: center;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+  }
+
+  .tooltip-sign .big-sign { font-size: 36px; }
+  .tooltip-sign .sign-info { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+
+  .start-screen {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #0f0c29, #1a1040);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+  }
+
+  .start-content {
+    text-align: center;
+    padding: 32px;
+    max-width: 380px;
+  }
+
+  .start-content .hand-icon { font-size: 72px; margin-bottom: 16px; display: block; animation: wave 2s ease-in-out infinite; }
+
+  @keyframes wave {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(10deg); }
+  }
+
+  .start-content h1 {
+    font-size: 30px;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .start-content h1 span { color: #a78bfa; }
+
+  .start-content p {
+    color: rgba(255,255,255,0.55);
+    font-size: 14px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .difficulty-sel {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .diff-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 8px 16px;
+    color: rgba(255,255,255,0.6);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .diff-btn.active {
+    background: rgba(167,139,250,0.2);
+    border-color: #a78bfa;
+    color: #a78bfa;
+  }
+
+  .how-to {
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+
+  .how-to p {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+
+  .how-to p:last-child { margin-bottom: 0; }
+  .how-to span { color: #a78bfa; font-weight: 700; }
+
+  .badge-new {
+    display: inline-block;
+    background: rgba(251,191,36,0.15);
+    border: 1px solid rgba(251,191,36,0.3);
+    color: #fbbf24;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+<div class="game-wrapper" id="gameWrapper">
+
+  <div class="start-screen" id="startScreen">
+    <div class="start-content">
+      <span class="hand-icon">🤟</span>
+      <h1>Lengua de <span>Señas</span></h1>
+      <p>Aprende el abecedario en Lengua de Señas Colombiana conectando cada letra con su seña correcta.</p>
+      <div class="how-to">
+        <p><span>①</span> Haz clic en una letra del abecedario</p>
+        <p><span>②</span> Luego haz clic en su seña correspondiente</p>
+        <p><span>③</span> ¡Conecta todas las letras para ganar!</p>
+        <p><span>💡</span> Pasa el mouse sobre las señas para ver una pista</p>
+      </div>
+      <p style="font-size:13px; color:rgba(255,255,255,0.5); margin-bottom:10px;">Elige dificultad:</p>
+      <div class="difficulty-sel">
+        <button class="diff-btn active" onclick="selectDiff(this,'easy')">🟢 Fácil<br><small style="font-size:10px;opacity:0.7">8 letras · 90s</small></button>
+        <button class="diff-btn" onclick="selectDiff(this,'medium')">🟡 Medio<br><small style="font-size:10px;opacity:0.7">14 letras · 60s</small></button>
+        <button class="diff-btn" onclick="selectDiff(this,'hard')">🔴 Difícil<br><small style="font-size:10px;opacity:0.7">20 letras · 45s</small></button>
+      </div>
+      <button class="control-btn btn-primary" style="font-size:16px; padding:13px 40px;" onclick="startGame()">¡Jugar ahora! 🚀</button>
+    </div>
+  </div>
+
+  <div class="header">
+    <h1>Lengua de <span>Señas</span> 🤟</h1>
+    <p>Conecta cada letra con su seña correcta</p>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-pill timer"><span class="icon">⏱</span> <span id="timerDisp">--</span></div>
+    <div class="stat-pill score"><span class="icon">⭐</span> <span id="scoreDisp">0 pts</span></div>
+    <div class="stat-pill errors"><span class="icon">❌</span> <span id="errDisp">0 errores</span></div>
+    <div class="stat-pill progress"><span class="icon">🎯</span> <span id="progDisp">0/0</span></div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill"></div>
+  </div>
+
+  <div class="hint-bar" id="hintBar">Selecciona una letra para comenzar ✨</div>
+
+  <div class="game-area" id="gameArea">
+    <div class="column" id="leftCol">
+      <div class="column-label">Letras</div>
+    </div>
+    <div class="canvas-col" id="canvasCol">
+      <svg id="lines-svg"></svg>
+    </div>
+    <div class="column" id="rightCol">
+      <div class="column-label">Señas</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="control-btn btn-secondary" onclick="showHint()">💡 Pista (-10pts)</button>
+    <button class="control-btn btn-secondary" onclick="restartGame()">🔄 Reiniciar</button>
+    <button class="control-btn btn-primary" onclick="goHome()">🏠 Menú</button>
+  </div>
+
+</div>
+
+<div class="tooltip-sign" id="tooltip">
+  <div class="big-sign" id="tooltipSign"></div>
+  <div class="sign-info" id="tooltipInfo"></div>
+</div>
+
+<script>
+const ALPHABET = [
+  { letter: 'A', sign: '👊', desc: 'Puño cerrado, pulgar al lado' },
+  { letter: 'B', sign: '✋', desc: 'Mano abierta, dedos juntos' },
+  { letter: 'C', sign: '🤏', desc: 'Dedos curvados en forma de C' },
+  { letter: 'D', sign: '☝️', desc: 'Índice arriba, dedos curvados' },
+  { letter: 'E', sign: '🤞', desc: 'Dedos doblados sobre pulgar' },
+  { letter: 'F', sign: '🖖', desc: 'Pulgar e índice unidos' },
+  { letter: 'G', sign: '👈', desc: 'Índice apunta al costado' },
+  { letter: 'H', sign: '🤜', desc: 'Índice y medio extendidos' },
+  { letter: 'I', sign: '🤙', desc: 'Meñique extendido' },
+  { letter: 'J', sign: '✌️', desc: 'Meñique con movimiento de J' },
+  { letter: 'K', sign: '🖕', desc: 'Índice y medio hacia arriba' },
+  { letter: 'L', sign: '🤙', desc: 'Pulgar e índice en L' },
+  { letter: 'M', sign: '✊', desc: 'Tres dedos sobre pulgar' },
+  { letter: 'N', sign: '🤞', desc: 'Dos dedos sobre pulgar' },
+  { letter: 'O', sign: '👌', desc: 'Dedos forman un círculo O' },
+  { letter: 'P', sign: '👇', desc: 'Índice apunta hacia abajo' },
+  { letter: 'Q', sign: '🤌', desc: 'Pulgar e índice apuntan abajo' },
+  { letter: 'R', sign: '🤞', desc: 'Índice y medio cruzados' },
+  { letter: 'S', sign: '✊', desc: 'Puño con pulgar sobre dedos' },
+  { letter: 'T', sign: '👍', desc: 'Pulgar entre índice y medio' },
+  { letter: 'U', sign: '✌️', desc: 'Índice y medio juntos' },
+  { letter: 'V', sign: '✌️', desc: 'Índice y medio separados' },
+  { letter: 'W', sign: '🖖', desc: 'Tres dedos extendidos' },
+  { letter: 'X', sign: '☝️', desc: 'Índice doblado como gancho' },
+  { letter: 'Y', sign: '🤙', desc: 'Pulgar y meñique extendidos' },
+  { letter: 'Z', sign: '👆', desc: 'Índice traza la letra Z' }
+];
+
+const DIFFICULTY = { easy: { count: 8, time: 90 }, medium: { count: 14, time: 60 }, hard: { count: 20, time: 45 } };
+let diff = 'easy';
+let gameLetters = [];
+let leftItems = [], rightItems = [];
+let selectedLeft = null, selectedRight = null;
+let matched = new Set();
+let errors = 0, score = 0, timerSec = 0, timerInterval = null;
+let gameStarted = false;
+let hintUsed = false;
+
+function selectDiff(btn, d) {
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  diff = d;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  document.getElementById('startScreen').style.display = 'none';
+  const cfg = DIFFICULTY[diff];
+  timerSec = cfg.time;
+  const pool = shuffle(ALPHABET).slice(0, cfg.count);
+  gameLetters = pool;
+  leftItems = shuffle([...pool]);
+  rightItems = shuffle([...pool]);
+  matched.clear();
+  errors = 0; score = 0;
+  selectedLeft = null; selectedRight = null;
+  renderColumns();
+  updateStats();
+  startTimer();
+  gameStarted = true;
+  setHint('Selecciona una letra para comenzar ✨');
+}
+
+function restartGame() {
+  clearInterval(timerInterval);
+  gameStarted = false;
+  const cfg = DIFFICULTY[diff];
+  timerSec = cfg.time;
+  const pool = shuffle(ALPHABET).slice(0, gameLetters.length);
+  gameLetters = pool;
+  leftItems = shuffle([...pool]);
+  rightItems = shuffle([...pool]);
+  matched.clear();
+  errors = 0; score = 0;
+  selectedLeft = null; selectedRight = null;
+  renderColumns();
+  updateStats();
+  startTimer();
+  gameStarted = true;
+  setHint('Selecciona una letra para comenzar ✨');
+}
+
+function goHome() {
+  clearInterval(timerInterval);
+  gameStarted = false;
+  document.getElementById('startScreen').style.display = 'flex';
+}
+
+function renderColumns() {
+  const lc = document.getElementById('leftCol');
+  const rc = document.getElementById('rightCol');
+  const svg = document.getElementById('lines-svg');
+  lc.innerHTML = '<div class="column-label">Letras</div>';
+  rc.innerHTML = '<div class="column-label">Señas</div>';
+  svg.innerHTML = '';
+
+  leftItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'letter-card';
+    card.dataset.letter = item.letter;
+    card.dataset.side = 'left';
+    card.innerHTML = `<span class="letter-text">${item.letter}</span><span class="letter-matched-icon">✅</span>`;
+    card.addEventListener('click', () => onClickLeft(card, item));
+    card.addEventListener('mouseenter', (e) => showTooltip(e, item));
+    card.addEventListener('mouseleave', hideTooltip);
+    lc.appendChild(card);
+  });
+
+  rightItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'letter-card';
+    card.dataset.letter = item.letter;
+    card.dataset.side = 'right';
+    card.innerHTML = `<span class="sign-emoji">${item.sign}</span><span class="sign-label">${item.desc.split(',')[0]}</span><span class="letter-matched-icon">✅</span>`;
+    card.addEventListener('click', () => onClickRight(card, item));
+    card.addEventListener('mouseenter', (e) => showTooltip(e, item));
+    card.addEventListener('mouseleave', hideTooltip);
+    rc.appendChild(card);
+  });
+}
+
+function onClickLeft(card, item) {
+  if (matched.has(item.letter)) return;
+  if (selectedLeft) selectedLeft.card.classList.remove('selected');
+  selectedLeft = { card, item };
+  card.classList.add('selected');
+  setHint(`Letra <strong>${item.letter}</strong> seleccionada — ahora elige su seña 👉`);
+  if (selectedRight) tryMatch();
+}
+
+function onClickRight(card, item) {
+  if (matched.has(item.letter)) return;
+  if (selectedRight) selectedRight.card.classList.remove('selected');
+  selectedRight = { card, item };
+  card.classList.add('selected');
+  if (selectedLeft) {
+    setHint(`Seña seleccionada — verificando conexión...`);
+    tryMatch();
+  } else {
+    setHint(`Seña <strong>${item.letter}</strong> seleccionada — ahora elige la letra 👈`);
+  }
+}
+
+function tryMatch() {
+  if (!selectedLeft || !selectedRight) return;
+  const lItem = selectedLeft.item;
+  const rItem = selectedRight.item;
+  const lCard = selectedLeft.card;
+  const rCard = selectedRight.card;
+
+  if (lItem.letter === rItem.letter) {
+    matched.add(lItem.letter);
+    lCard.classList.remove('selected');
+    rCard.classList.remove('selected');
+    lCard.classList.add('matched');
+    rCard.classList.add('matched');
+    drawLine(lCard, rCard, true);
+    score += 20;
+    setHint(`✅ ¡Correcto! <strong>${lItem.letter}</strong> = ${rItem.sign} ${rItem.desc}`);
+    selectedLeft = null; selectedRight = null;
+    updateStats();
+    if (matched.size === gameLetters.length) endGame(true);
+  } else {
+    errors++;
+    score = Math.max(0, score - 5);
+    lCard.classList.add('wrong');
+    rCard.classList.add('wrong');
+    drawLine(lCard, rCard, false);
+    setTimeout(() => {
+      lCard.classList.remove('wrong', 'selected');
+      rCard.classList.remove('wrong', 'selected');
+    }, 500);
+    setHint(`❌ Incorrecto — <strong>${lItem.letter}</strong> no es esa seña. ¡Intenta de nuevo!`);
+    selectedLeft = null; selectedRight = null;
+    updateStats();
+  }
+}
+
+function getCardCenter(card) {
+  const gameArea = document.getElementById('gameArea');
+  const canvas = document.getElementById('canvasCol');
+  const gaRect = gameArea.getBoundingClientRect();
+  const canRect = canvas.getBoundingClientRect();
+  const cRect = card.getBoundingClientRect();
+  const x = cRect.left + cRect.width / 2 - canRect.left;
+  const y = cRect.top + cRect.height / 2 - canRect.top;
+  return { x, y };
+}
+
+function drawLine(lCard, rCard, correct) {
+  const svg = document.getElementById('lines-svg');
+  const canvasCol = document.getElementById('canvasCol');
+  const canRect = canvasCol.getBoundingClientRect();
+  const lRect = lCard.getBoundingClientRect();
+  const rRect = rCard.getBoundingClientRect();
+  const x1 = lRect.right - canRect.left;
+  const y1 = lRect.top + lRect.height / 2 - canRect.top;
+  const x2 = rRect.left - canRect.left;
+  const y2 = rRect.top + rRect.height / 2 - canRect.top;
+  const cx1 = x1 + 30;
+  const cx2 = x2 - 30;
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', `M${x1},${y1} C${cx1},${y1} ${cx2},${y2} ${x2},${y2}`);
+  path.setAttribute('class', `connection-line${correct ? ' matched' : ' wrong-line'}`);
+  svg.appendChild(path);
+  if (!correct) {
+    setTimeout(() => svg.removeChild(path), 600);
+  }
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+  updateStats();
+  timerInterval = setInterval(() => {
+    timerSec--;
+    updateStats();
+    if (timerSec <= 0) {
+      clearInterval(timerInterval);
+      endGame(false);
+    }
+  }, 1000);
+}
+
+function updateStats() {
+  const total = gameLetters.length;
+  const done = matched.size;
+  document.getElementById('timerDisp').textContent = timerSec + 's';
+  document.getElementById('scoreDisp').textContent = score + ' pts';
+  document.getElementById('errDisp').textContent = errors + (errors === 1 ? ' error' : ' errores');
+  document.getElementById('progDisp').textContent = done + '/' + total;
+  const pct = total ? (done / total * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function setHint(msg) {
+  document.getElementById('hintBar').innerHTML = msg;
+}
+
+function showHint() {
+  if (!gameStarted) return;
+  const unmatched = gameLetters.filter(l => !matched.has(l.letter));
+  if (unmatched.length === 0) return;
+  score = Math.max(0, score - 10);
+  const pick = unmatched[Math.floor(Math.random() * unmatched.length)];
+  setHint(`💡 Pista: La letra <strong>${pick.letter}</strong> tiene la seña ${pick.sign} — ${pick.desc}`);
+  updateStats();
+}
+
+function endGame(won) {
+  clearInterval(timerInterval);
+  gameStarted = false;
+  setTimeout(() => showModal(won), 400);
+}
+
+function calcStars(won) {
+  if (!won) return 0;
+  if (errors === 0) return 3;
+  if (errors <= 3) return 2;
+  return 1;
+}
+
+function showModal(won) {
+  const stars = calcStars(won);
+  const starStr = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+  const emoji = won ? (stars === 3 ? '🏆' : '🎉') : '😢';
+  const title = won ? (stars === 3 ? '¡Perfecto!' : '¡Muy bien!') : '¡Tiempo!';
+  const msg = won
+    ? `Completaste el abecedario con ${errors} errores y ${score} puntos.`
+    : `Conectaste ${matched.size} de ${gameLetters.length} letras. ¡Sigue practicando!`;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <span class="emoji-big">${emoji}</span>
+      <h2>${title}</h2>
+      <div class="stars">${starStr}</div>
+      <p>${msg}</p>
+      <div class="result-stats">
+        <div class="result-stat"><div class="val">${score}</div><div class="lbl">Puntos</div></div>
+        <div class="result-stat"><div class="val">${errors}</div><div class="lbl">Errores</div></div>
+        <div class="result-stat"><div class="val">${matched.size}/${gameLetters.length}</div><div class="lbl">Parejas</div></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+        <button class="control-btn btn-primary" onclick="this.closest('.overlay').remove(); restartGame();">🔄 Otra vez</button>
+        <button class="control-btn btn-secondary" onclick="this.closest('.overlay').remove(); goHome();">🏠 Menú</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  if (won) spawnConfetti();
+}
+
+function spawnConfetti() {
+  const colors = ['#a78bfa', '#34d399', '#fbbf24', '#f87171', '#60a5fa', '#f472b6'];
+  for (let i = 0; i < 60; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `left:${Math.random()*100}vw; background:${colors[Math.floor(Math.random()*colors.length)]}; width:${6+Math.random()*8}px; height:${6+Math.random()*8}px; animation-duration:${2+Math.random()*2}s; animation-delay:0s; border-radius:${Math.random()>0.5?'50%':'2px'}`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i * 40);
+  }
+}
+
+function showTooltip(e, item) {
+  const t = document.getElementById('tooltip');
+  document.getElementById('tooltipSign').textContent = item.sign;
+  document.getElementById('tooltipInfo').textContent = `Letra ${item.letter}: ${item.desc}`;
+  t.style.display = 'block';
+  t.style.left = (e.clientX + 14) + 'px';
+  t.style.top = (e.clientY - 30) + 'px';
+}
+
+function hideTooltip() {
+  document.getElementById('tooltip').style.display = 'none';
+}
+
+document.addEventListener('mousemove', e => {
+  const t = document.getElementById('tooltip');
+  if (t.style.display === 'block') {
+    t.style.left = (e.clientX + 14) + 'px';
+    t.style.top = (e.clientY - 30) + 'px';
+  }
+});
+</script>
+</body>
+</html>
