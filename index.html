@@ -5,133 +5,239 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Señas & Letras</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Nunito, sans-serif; background: linear-gradient(135deg,#1a1a2e,#16213e,#0f3460); min-height:100vh; color:#fff; overflow-x:hidden; }
-  .game-header { text-align:center; padding:18px 16px 8px; }
-  .game-title { font-size:26px; font-weight:900; background:linear-gradient(90deg,#f7971e,#ffd200); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  .game-subtitle { font-size:12px; color:#a0b4cc; margin-top:3px; }
-  .stats-bar { display:flex; justify-content:center; gap:10px; padding:10px 16px; flex-wrap:wrap; }
-  .stat-pill { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:5px 12px; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px; }
-  .stat-pill span.val { color:#ffd200; }
-  .difficulty-selector { display:flex; justify-content:center; gap:8px; padding:6px 16px 10px; }
-  .diff-btn { background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.15); border-radius:20px; color:#c0cfe0; font-family:Nunito,sans-serif; font-size:12px; font-weight:700; padding:5px 12px; cursor:pointer; transition:all 0.2s; }
-  .diff-btn.active, .diff-btn:hover { background:rgba(247,151,30,0.25); border-color:#f7971e; color:#ffd200; }
-  .progress-bar-wrap { padding:0 20px 6px; }
-  .progress-bar { background:rgba(255,255,255,0.1); border-radius:6px; height:7px; overflow:hidden; }
-  .progress-fill { height:100%; background:linear-gradient(90deg,#f7971e,#ffd200); border-radius:6px; transition:width 0.4s; width:0%; }
-  .action-row { display:flex; justify-content:center; gap:10px; padding:8px 16px 4px; flex-wrap:wrap; }
-  .btn { font-family:Nunito,sans-serif; font-weight:700; font-size:12px; border-radius:20px; border:none; padding:7px 16px; cursor:pointer; transition:all 0.18s; }
-  .btn-hint { background:rgba(100,180,255,0.15); border:1.5px solid #64b4ff; color:#64b4ff; }
-  .btn-hint:hover { background:rgba(100,180,255,0.28); }
-  .btn-reset { background:rgba(255,255,255,0.09); border:1.5px solid rgba(255,255,255,0.2); color:#c0cfe0; }
-  .btn-reset:hover { background:rgba(255,255,255,0.15); }
-  .hint-cost { font-size:10px; opacity:0.75; }
-  .game-area { position:relative; display:flex; justify-content:space-between; align-items:flex-start; padding:6px 10px; gap:6px; }
-  .column { display:flex; flex-direction:column; gap:5px; width:110px; flex-shrink:0; }
-  .card { background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.13); border-radius:12px; padding:6px 8px; cursor:pointer; transition:all 0.18s; user-select:none; min-height:60px; max-height:60px; display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:900; color:#e8f0fe; }
-  .card:hover:not(.matched):not(.disabled) { background:rgba(247,151,30,0.18); border-color:#f7971e; transform:scale(1.04); }
-  .card.selected { background:rgba(247,151,30,0.28); border-color:#ffd200; box-shadow:0 0 12px rgba(255,210,0,0.3); transform:scale(1.05); }
-  .card.matched { background:rgba(34,197,94,0.2); border-color:#22c55e; color:#86efac; cursor:default; }
-  .card.wrong { background:rgba(239,68,68,0.22); border-color:#ef4444; animation:shake 0.35s ease; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
-  .card.disabled { opacity:0.4; cursor:default; }
-  .sign-card { background:rgba(255,255,255,0.06); border:1.5px solid rgba(255,255,255,0.13); border-radius:12px; padding:3px; cursor:pointer; transition:all 0.18s; user-select:none; min-height:60px; max-height:60px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
-  .sign-card img { width:54px; height:54px; object-fit:cover; border-radius:8px; display:block; }
-  .sign-card:hover:not(.matched):not(.disabled) { background:rgba(100,180,255,0.18); border-color:#64b4ff; transform:scale(1.04); }
-  .sign-card.selected { background:rgba(100,180,255,0.28); border-color:#64b4ff; box-shadow:0 0 12px rgba(100,180,255,0.3); transform:scale(1.05); }
-  .sign-card.matched { background:rgba(34,197,94,0.2); border-color:#22c55e; cursor:default; }
-  .sign-card.wrong { background:rgba(239,68,68,0.22); border-color:#ef4444; animation:shake 0.35s ease; }
-  .sign-card.disabled { opacity:0.4; cursor:default; }
-  .svg-center { position:relative; flex:1; align-self:stretch; min-height:300px; }
-  #connection-svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:visible; }
-  .hint-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.65); z-index:100; align-items:center; justify-content:center; }
-  .hint-overlay.active { display:flex; }
-  .hint-modal { background:#1a2744; border:2px solid #f7971e; border-radius:20px; padding:22px 18px 18px; max-width:360px; width:92%; text-align:center; max-height:90vh; overflow-y:auto; }
-  .hint-modal h3 { font-size:16px; font-weight:800; color:#ffd200; margin-bottom:8px; }
-  .hint-modal p { font-size:12px; color:#a0b4cc; margin-bottom:12px; }
-  .hint-letters-grid { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-bottom:12px; }
-  .hint-letter-btn { background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.18); border-radius:10px; color:#e8f0fe; font-family:Nunito,sans-serif; font-weight:800; font-size:17px; padding:7px 12px; cursor:pointer; transition:all 0.15s; min-width:42px; }
-  .hint-letter-btn:hover { background:rgba(247,151,30,0.28); border-color:#f7971e; color:#ffd200; }
-  .btn-cancel-hint { background:rgba(255,255,255,0.07); border:1.5px solid rgba(255,255,255,0.18); border-radius:12px; color:#a0b4cc; font-family:Nunito,sans-serif; font-weight:700; font-size:12px; padding:7px 18px; cursor:pointer; }
-  .hint-preview { background:rgba(255,255,255,0.06); border-radius:14px; padding:14px; margin-bottom:12px; display:flex; align-items:center; justify-content:center; gap:16px; }
-  .hint-preview-letter { font-size:52px; font-weight:900; color:#ffd200; line-height:1; }
-  .hint-preview img { width:90px; height:90px; object-fit:cover; border-radius:12px; }
-  .btn-use-hint { background:linear-gradient(90deg,#f7971e,#ffd200); border:none; border-radius:12px; color:#1a1a2e; font-family:Nunito,sans-serif; font-weight:800; font-size:13px; padding:9px 20px; cursor:pointer; margin-bottom:8px; display:block; width:100%; }
-  .result-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:200; align-items:center; justify-content:center; }
-  .result-overlay.active { display:flex; }
-  .result-modal { background:#1a2744; border:2px solid #ffd200; border-radius:24px; padding:28px 22px; max-width:310px; width:90%; text-align:center; }
-  .result-title { font-size:26px; font-weight:900; color:#ffd200; margin-bottom:5px; }
-  .result-stars { font-size:30px; margin-bottom:10px; letter-spacing:4px; }
-  .result-score { font-size:17px; font-weight:700; color:#e8f0fe; margin-bottom:5px; }
-  .result-detail { font-size:12px; color:#a0b4cc; margin-bottom:16px; }
-  .btn-play-again { background:linear-gradient(90deg,#f7971e,#ffd200); border:none; border-radius:12px; color:#1a1a2e; font-family:Nunito,sans-serif; font-weight:800; font-size:14px; padding:10px 24px; cursor:pointer; width:100%; }
-  .timer-warning { color:#ef4444 !important; animation:pulse 0.8s ease infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-  .confetti-piece { position:fixed; width:10px; height:10px; border-radius:2px; pointer-events:none; z-index:999; animation:confettiFall 1.8s ease forwards; }
-  @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(100vh) rotate(720deg);opacity:0} }
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:Nunito,sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);color:#fff;}
+
+/* ===== SCREENS ===== */
+.screen{display:none;flex-direction:column;min-height:100vh;}
+.screen.active{display:flex;}
+
+/* ===== NAV TABS ===== */
+.nav{display:flex;justify-content:center;gap:8px;padding:12px 16px 6px;flex-shrink:0;}
+.nav-btn{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);border-radius:18px;color:#c0cfe0;font-family:Nunito,sans-serif;font-size:12px;font-weight:700;padding:6px 16px;cursor:pointer;transition:all 0.18s;}
+.nav-btn.active{background:linear-gradient(90deg,rgba(247,151,30,0.35),rgba(255,210,0,0.25));border-color:#f7971e;color:#ffd200;}
+.nav-btn:hover:not(.active){background:rgba(255,255,255,0.12);color:#fff;}
+
+/* ===== HEADER ===== */
+.hdr{text-align:center;padding:6px 12px 4px;flex-shrink:0;}
+.hdr-title{font-size:22px;font-weight:900;background:linear-gradient(90deg,#f7971e,#ffd200);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hdr-sub{font-size:11px;color:#a0b4cc;margin-top:2px;}
+
+/* ===== GAME SCREEN ===== */
+.diff-row{display:flex;justify-content:center;gap:6px;padding:4px 12px;flex-shrink:0;}
+.diff-btn{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.15);border-radius:14px;color:#c0cfe0;font-family:Nunito,sans-serif;font-size:11px;font-weight:700;padding:4px 12px;cursor:pointer;transition:all 0.18s;}
+.diff-btn.active,.diff-btn:hover{background:rgba(247,151,30,0.25);border-color:#f7971e;color:#ffd200;}
+
+.stats{display:flex;justify-content:center;gap:8px;padding:4px 12px;flex-shrink:0;flex-wrap:wrap;}
+.pill{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:3px 10px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;}
+.pill .val{color:#ffd200;}
+.timer-warn{color:#ef4444!important;animation:pulse 0.8s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+.prog-wrap{padding:3px 18px;flex-shrink:0;}
+.prog-bar{background:rgba(255,255,255,0.1);border-radius:4px;height:5px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#f7971e,#ffd200);border-radius:4px;transition:width 0.4s;width:0%;}
+
+.actions{display:flex;justify-content:center;gap:8px;padding:4px 12px 2px;flex-shrink:0;}
+.btn{font-family:Nunito,sans-serif;font-weight:700;font-size:11px;border-radius:14px;border:none;padding:5px 14px;cursor:pointer;transition:all 0.18s;}
+.btn-hint{background:rgba(100,180,255,0.15);border:1.5px solid #64b4ff;color:#64b4ff;}
+.btn-hint:hover{background:rgba(100,180,255,0.28);}
+.btn-reset{background:rgba(255,255,255,0.09);border:1.5px solid rgba(255,255,255,0.2);color:#c0cfe0;}
+.btn-reset:hover{background:rgba(255,255,255,0.15);}
+
+/* GAME AREA */
+.game-area{
+  flex:1;display:flex;align-items:flex-start;justify-content:center;
+  padding:4px 10px 10px;gap:0;overflow-y:auto;
+}
+
+/* COLUMN WRAPPER */
+.col-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;width:90px;flex-shrink:0;}
+.col-label{font-size:11px;font-weight:800;color:#a0b4cc;text-transform:uppercase;letter-spacing:1px;padding:2px 0 4px;text-align:center;}
+
+.column{display:flex;flex-direction:column;gap:4px;width:90px;}
+
+/* FIXED SIZE CARDS — image drives height */
+.card{
+  background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.14);
+  border-radius:10px;cursor:pointer;transition:all 0.15s;user-select:none;
+  width:90px;height:70px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:900;color:#e8f0fe;
+}
+.card:hover:not(.matched):not(.disabled){background:rgba(247,151,30,0.18);border-color:#f7971e;transform:scale(1.03);}
+.card.selected{background:rgba(247,151,30,0.28);border-color:#ffd200;box-shadow:0 0 10px rgba(255,210,0,0.28);transform:scale(1.04);}
+.card.matched{background:rgba(34,197,94,0.2);border-color:#22c55e;color:#86efac;cursor:default;}
+.card.wrong{background:rgba(239,68,68,0.22);border-color:#ef4444;animation:shake 0.3s ease;}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+
+.sign-card{
+  background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.14);
+  border-radius:10px;cursor:pointer;transition:all 0.15s;user-select:none;
+  width:90px;height:70px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;padding:3px;
+}
+.sign-card img{width:64px;height:64px;object-fit:contain;border-radius:6px;display:block;}
+.sign-card:hover:not(.matched):not(.disabled){background:rgba(100,180,255,0.18);border-color:#64b4ff;transform:scale(1.03);}
+.sign-card.selected{background:rgba(100,180,255,0.28);border-color:#64b4ff;box-shadow:0 0 10px rgba(100,180,255,0.28);transform:scale(1.04);}
+.sign-card.matched{background:rgba(34,197,94,0.2);border-color:#22c55e;cursor:default;}
+.sign-card.wrong{background:rgba(239,68,68,0.22);border-color:#ef4444;animation:shake 0.3s ease;}
+
+/* SVG connector */
+.svg-mid{position:relative;width:60px;flex-shrink:0;margin-top:28px;}/* 28px = label height */
+#connection-svg{position:absolute;top:0;left:0;width:100%;pointer-events:none;overflow:visible;}
+
+/* ===== REPASO SCREEN ===== */
+.repaso-hdr{text-align:center;padding:10px 16px 6px;flex-shrink:0;}
+.repaso-title{font-size:20px;font-weight:900;background:linear-gradient(90deg,#f7971e,#ffd200);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.repaso-sub{font-size:11px;color:#a0b4cc;margin-top:2px;}
+
+.repaso-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(100px,1fr));
+  gap:10px;
+  padding:10px 14px 20px;
+  overflow-y:auto;
+  flex:1;
+}
+
+.repaso-card{
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.12);
+  border-radius:14px;
+  display:flex;flex-direction:column;align-items:center;
+  padding:8px 6px 6px;
+  gap:5px;
+  transition:all 0.18s;
+  cursor:default;
+}
+.repaso-card:hover{background:rgba(100,180,255,0.12);border-color:#64b4ff;transform:scale(1.04);}
+.repaso-letter{font-size:28px;font-weight:900;color:#ffd200;line-height:1;}
+.repaso-img{width:74px;height:74px;object-fit:contain;border-radius:8px;}
+.repaso-name{font-size:10px;color:#a0b4cc;font-weight:700;text-align:center;}
+
+/* ===== MODALS ===== */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100;align-items:center;justify-content:center;}
+.overlay.active{display:flex;}
+.modal{background:#1a2744;border:2px solid #f7971e;border-radius:18px;padding:20px 16px 16px;max-width:340px;width:92%;text-align:center;max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:15px;font-weight:800;color:#ffd200;margin-bottom:7px;}
+.modal p{font-size:11px;color:#a0b4cc;margin-bottom:10px;}
+.hint-grid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px;}
+.hlb{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:9px;color:#e8f0fe;font-family:Nunito,sans-serif;font-weight:800;font-size:16px;padding:6px 10px;cursor:pointer;transition:all 0.14s;min-width:38px;}
+.hlb:hover{background:rgba(247,151,30,0.28);border-color:#f7971e;color:#ffd200;}
+.btn-cancel{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:10px;color:#a0b4cc;font-family:Nunito,sans-serif;font-weight:700;font-size:11px;padding:6px 16px;cursor:pointer;}
+.hint-prev{background:rgba(255,255,255,0.06);border-radius:12px;padding:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:14px;}
+.hint-ltr{font-size:46px;font-weight:900;color:#ffd200;line-height:1;}
+.hint-prev img{width:80px;height:80px;object-fit:contain;border-radius:10px;}
+.btn-use{background:linear-gradient(90deg,#f7971e,#ffd200);border:none;border-radius:10px;color:#1a1a2e;font-family:Nunito,sans-serif;font-weight:800;font-size:12px;padding:8px 18px;cursor:pointer;margin-bottom:7px;display:block;width:100%;}
+
+.rmodal{background:#1a2744;border:2px solid #ffd200;border-radius:20px;padding:24px 20px;max-width:290px;width:90%;text-align:center;}
+.r-title{font-size:24px;font-weight:900;color:#ffd200;margin-bottom:4px;}
+.r-stars{font-size:28px;margin-bottom:8px;letter-spacing:4px;}
+.r-score{font-size:16px;font-weight:700;color:#e8f0fe;margin-bottom:4px;}
+.r-detail{font-size:11px;color:#a0b4cc;margin-bottom:14px;}
+.btn-again{background:linear-gradient(90deg,#f7971e,#ffd200);border:none;border-radius:10px;color:#1a1a2e;font-family:Nunito,sans-serif;font-weight:800;font-size:13px;padding:9px 22px;cursor:pointer;width:100%;}
+
+.confetti-piece{position:fixed;width:9px;height:9px;border-radius:2px;pointer-events:none;z-index:999;animation:cfall 1.8s ease forwards;}
+@keyframes cfall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* scrollbar style */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:4px;}
 </style>
 </head>
 <body>
 
-<div class="game-header">
-  <div class="game-title">✋ Señas & Letras</div>
-  <div class="game-subtitle">Une cada letra con su seña correcta en Lengua de Señas</div>
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" onclick="showScreen('game')">🎮 Juego</button>
+  <button class="nav-btn" onclick="showScreen('repaso')">📖 Repasar abecedario</button>
 </div>
 
-<div class="difficulty-selector">
-  <button class="diff-btn active" onclick="setDifficulty('easy')">Fácil (8)</button>
-  <button class="diff-btn" onclick="setDifficulty('medium')">Medio (14)</button>
-  <button class="diff-btn" onclick="setDifficulty('hard')">Difícil (27)</button>
-</div>
-
-<div class="stats-bar">
-  <div class="stat-pill">⏱ <span class="val" id="timer-display">90s</span></div>
-  <div class="stat-pill">⭐ <span class="val" id="score-display">0</span></div>
-  <div class="stat-pill">❌ <span class="val" id="errors-display">0</span></div>
-  <div class="stat-pill">✅ <span class="val" id="progress-display">0/8</span></div>
-</div>
-
-<div class="progress-bar-wrap">
-  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-</div>
-
-<div class="action-row">
-  <button class="btn btn-hint" onclick="openHintModal()">💡 Usar pista <span class="hint-cost">(-10 pts)</span></button>
-  <button class="btn btn-reset" onclick="resetGame()">🔄 Nueva partida</button>
-</div>
-
-<div class="game-area">
-  <div class="column" id="letters-col"></div>
-  <div class="svg-center" id="svg-center">
-    <svg id="connection-svg"></svg>
+<!-- ====== GAME SCREEN ====== -->
+<div class="screen active" id="screen-game">
+  <div class="hdr">
+    <div class="hdr-title">✋ Señas & Letras</div>
+    <div class="hdr-sub">Une cada letra con su seña correcta</div>
   </div>
-  <div class="column" id="signs-col"></div>
+
+  <div class="diff-row">
+    <button class="diff-btn active" onclick="setDiff('easy')">Fácil (8)</button>
+    <button class="diff-btn" onclick="setDiff('medium')">Medio (14)</button>
+    <button class="diff-btn" onclick="setDiff('hard')">Difícil (27)</button>
+  </div>
+
+  <div class="stats">
+    <div class="pill">⏱ <span class="val" id="td">90s</span></div>
+    <div class="pill">⭐ <span class="val" id="sd">0</span></div>
+    <div class="pill">❌ <span class="val" id="ed">0</span></div>
+    <div class="pill">✅ <span class="val" id="pd">0/8</span></div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-hint" onclick="openHint()">💡 Usar pista <span style="font-size:10px;opacity:.75;">(-10 pts)</span></button>
+    <button class="btn btn-reset" onclick="resetGame()">🔄 Nueva partida</button>
+  </div>
+
+  <div class="game-area" id="game-area">
+    <!-- col izquierda -->
+    <div class="col-wrap">
+      <div class="col-label">🔤 Letras</div>
+      <div class="column" id="lcol"></div>
+    </div>
+    <!-- svg connector -->
+    <div class="svg-mid" id="svgmid">
+      <svg id="connection-svg"></svg>
+    </div>
+    <!-- col derecha -->
+    <div class="col-wrap">
+      <div class="col-label">🤚 Señas</div>
+      <div class="column" id="rcol"></div>
+    </div>
+  </div>
 </div>
 
-<div class="hint-overlay" id="hint-overlay">
-  <div class="hint-modal">
+<!-- ====== REPASO SCREEN ====== -->
+<div class="screen" id="screen-repaso">
+  <div class="repaso-hdr">
+    <div class="repaso-title">📖 Abecedario en Señas</div>
+    <div class="repaso-sub">Repasa cada letra y su seña correspondiente</div>
+  </div>
+  <div class="repaso-grid" id="repaso-grid"></div>
+</div>
+
+<!-- HINT OVERLAY -->
+<div class="overlay" id="hint-ov">
+  <div class="modal">
     <h3>💡 Usar Pista</h3>
-    <div id="hint-step1">
+    <div id="hs1">
       <p>Selecciona la letra que quieres ver:</p>
-      <div class="hint-letters-grid" id="hint-letters-grid"></div>
-      <button class="btn-cancel-hint" onclick="closeHintModal()">Cancelar</button>
+      <div class="hint-grid" id="hgrid"></div>
+      <button class="btn-cancel" onclick="closeHint()">Cancelar</button>
     </div>
-    <div id="hint-step2" style="display:none">
-      <div class="hint-preview" id="hint-preview"></div>
-      <button class="btn-use-hint" id="btn-use-hint">✅ Usar esta pista (-10 pts)</button>
-      <button class="btn-cancel-hint" onclick="backToStep1()">← Elegir otra letra</button>
+    <div id="hs2" style="display:none">
+      <div class="hint-prev" id="hprev"></div>
+      <button class="btn-use" id="buse">✅ Usar esta pista (-10 pts)</button>
+      <button class="btn-cancel" onclick="back1()">← Elegir otra letra</button>
     </div>
   </div>
 </div>
 
-<div class="result-overlay" id="result-overlay">
-  <div class="result-modal">
-    <div class="result-title" id="result-title">¡Completado!</div>
-    <div class="result-stars" id="result-stars">⭐⭐⭐</div>
-    <div class="result-score" id="result-score">Puntuación: 0</div>
-    <div class="result-detail" id="result-detail"></div>
-    <button class="btn-play-again" onclick="resetGame();document.getElementById('result-overlay').classList.remove('active')">🔄 Jugar de nuevo</button>
+<!-- RESULT OVERLAY -->
+<div class="overlay" id="result-ov">
+  <div class="rmodal">
+    <div class="r-title" id="rtitle">¡Completado!</div>
+    <div class="r-stars" id="rstars">⭐⭐⭐</div>
+    <div class="r-score" id="rscore">Puntuación: 0</div>
+    <div class="r-detail" id="rdetail"></div>
+    <button class="btn-again" onclick="resetGame();document.getElementById('result-ov').classList.remove('active')">🔄 Jugar de nuevo</button>
   </div>
 </div>
 
@@ -166,214 +272,215 @@ const SIGN_IMAGES = {
   "Z": "data:image/png;base64,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"
 };
 
-const ALL_LETTERS = Object.keys(SIGN_IMAGES);
-const DIFFICULTIES = { easy:{count:8,time:90}, medium:{count:14,time:60}, hard:{count:27,time:120} };
+const ALL = Object.keys(SIGN_IMAGES);
+const DIFF = { easy:{n:8,t:90}, medium:{n:14,t:60}, hard:{n:27,t:120} };
+let diff='easy', letters=[], lOrd=[], rOrd=[], selL=null, selR=null;
+let matched={}, errors=0, score=0, timerInt=null, timeLeft=90, active=false;
 
-let difficulty='easy', gameLetters=[], leftOrder=[], rightOrder=[], selectedLeft=null, selectedRight=null;
-let matched={}, errors=0, score=0, timerInterval=null, timeLeft=90, gameActive=false;
+/* ---- SCREEN NAVIGATION ---- */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(id==='repaso') buildRepaso();
+  if(id==='game') { clearInterval(timerInt); resetGame(); }
+}
 
-function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+/* ---- REPASO ---- */
+function buildRepaso(){
+  const grid = document.getElementById('repaso-grid');
+  grid.innerHTML = '';
+  ALL.forEach(lt => {
+    const card = document.createElement('div');
+    card.className = 'repaso-card';
+    card.innerHTML = `
+      <div class="repaso-letter">${lt}</div>
+      <img class="repaso-img" src="${SIGN_IMAGES[lt]}" alt="Seña ${lt}">
+    `;
+    grid.appendChild(card);
+  });
+}
 
-function setDifficulty(d){
-  difficulty=d;
+/* ---- GAME ---- */
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+function setDiff(d){
+  diff=d;
   document.querySelectorAll('.diff-btn').forEach((b,i)=>b.classList.toggle('active',['easy','medium','hard'][i]===d));
   resetGame();
 }
 
 function resetGame(){
-  clearInterval(timerInterval);
-  const {count,time}=DIFFICULTIES[difficulty];
-  gameLetters=shuffle([...ALL_LETTERS]).slice(0,count);
-  leftOrder=shuffle([...gameLetters]);
-  rightOrder=shuffle([...gameLetters]);
-  matched={}; errors=0; score=0; selectedLeft=null; selectedRight=null; timeLeft=time; gameActive=true;
-  updateStats(); renderCards(); clearLines(); startTimer();
-  document.getElementById('result-overlay').classList.remove('active');
+  clearInterval(timerInt);
+  const {n,t}=DIFF[diff];
+  letters=shuffle([...ALL]).slice(0,n);
+  lOrd=shuffle([...letters]); rOrd=shuffle([...letters]);
+  matched={}; errors=0; score=0; selL=null; selR=null; timeLeft=t; active=true;
+  updateStats(); renderCards(); clearLines();
+  document.getElementById('result-ov').classList.remove('active');
+  startTimer();
 }
 
 function startTimer(){
-  clearInterval(timerInterval);
-  updateTimerDisplay();
-  timerInterval=setInterval(()=>{
-    timeLeft--;
-    updateTimerDisplay();
-    if(timeLeft<=0){ clearInterval(timerInterval); gameActive=false; showResult(false); }
-  },1000);
+  clearInterval(timerInt); updateTD();
+  timerInt=setInterval(()=>{timeLeft--;updateTD();if(timeLeft<=0){clearInterval(timerInt);active=false;showResult(false);}},1000);
 }
 
-function updateTimerDisplay(){
-  const el=document.getElementById('timer-display');
+function updateTD(){
+  const el=document.getElementById('td');
   el.textContent=timeLeft+'s';
-  el.className=timeLeft<=10?'val timer-warning':'val';
+  el.className=timeLeft<=10?'val timer-warn':'val';
 }
 
 function updateStats(){
-  document.getElementById('score-display').textContent=score;
-  document.getElementById('errors-display').textContent=errors;
-  const done=Object.keys(matched).length, total=gameLetters.length;
-  document.getElementById('progress-display').textContent=done+'/'+total;
-  document.getElementById('progress-fill').style.width=(done/total*100)+'%';
+  document.getElementById('sd').textContent=score;
+  document.getElementById('ed').textContent=errors;
+  const done=Object.keys(matched).length, tot=letters.length;
+  document.getElementById('pd').textContent=done+'/'+tot;
+  document.getElementById('pf').style.width=(done/tot*100)+'%';
 }
 
 function renderCards(){
-  const lCol=document.getElementById('letters-col');
-  const rCol=document.getElementById('signs-col');
-  lCol.innerHTML=''; rCol.innerHTML='';
-  leftOrder.forEach(letter=>{
-    const card=document.createElement('div');
-    card.className='card'; card.dataset.letter=letter; card.id='left-'+letter;
-    card.textContent=letter;
-    card.onclick=()=>selectLeft(letter);
-    lCol.appendChild(card);
+  const lc=document.getElementById('lcol'), rc=document.getElementById('rcol');
+  lc.innerHTML=''; rc.innerHTML='';
+  lOrd.forEach(lt=>{
+    const c=document.createElement('div');
+    c.className='card'; c.id='L'+lt; c.textContent=lt;
+    c.onclick=()=>pickL(lt); lc.appendChild(c);
   });
-  rightOrder.forEach(letter=>{
-    const card=document.createElement('div');
-    card.className='sign-card'; card.dataset.letter=letter; card.id='right-'+letter;
+  rOrd.forEach(lt=>{
+    const c=document.createElement('div');
+    c.className='sign-card'; c.id='R'+lt;
     const img=document.createElement('img');
-    img.src=SIGN_IMAGES[letter];
-    img.alt='Seña '+letter;
-    card.appendChild(img);
-    card.onclick=()=>selectRight(letter);
-    rCol.appendChild(card);
+    img.src=SIGN_IMAGES[lt]; img.alt=lt;
+    c.appendChild(img); c.onclick=()=>pickR(lt); rc.appendChild(c);
   });
+  // set svg height to match column
+  setTimeout(()=>{
+    const col=document.getElementById('lcol');
+    const svg=document.getElementById('connection-svg');
+    svg.style.height=col.offsetHeight+'px';
+  },50);
 }
 
-function selectLeft(letter){
-  if(!gameActive||matched[letter]) return;
-  if(selectedLeft===letter){ document.getElementById('left-'+letter).classList.remove('selected'); selectedLeft=null; return; }
-  if(selectedLeft) document.getElementById('left-'+selectedLeft).classList.remove('selected');
-  selectedLeft=letter;
-  document.getElementById('left-'+letter).classList.add('selected');
-  if(selectedRight) tryMatch();
+function pickL(lt){
+  if(!active||matched[lt]) return;
+  if(selL===lt){document.getElementById('L'+lt).classList.remove('selected');selL=null;return;}
+  if(selL) document.getElementById('L'+selL).classList.remove('selected');
+  selL=lt; document.getElementById('L'+lt).classList.add('selected');
+  if(selR) tryMatch();
 }
 
-function selectRight(letter){
-  if(!gameActive||matched[letter]) return;
-  if(selectedRight===letter){ document.getElementById('right-'+letter).classList.remove('selected'); selectedRight=null; return; }
-  if(selectedRight) document.getElementById('right-'+selectedRight).classList.remove('selected');
-  selectedRight=letter;
-  document.getElementById('right-'+letter).classList.add('selected');
-  if(selectedLeft) tryMatch();
+function pickR(lt){
+  if(!active||matched[lt]) return;
+  if(selR===lt){document.getElementById('R'+lt).classList.remove('selected');selR=null;return;}
+  if(selR) document.getElementById('R'+selR).classList.remove('selected');
+  selR=lt; document.getElementById('R'+lt).classList.add('selected');
+  if(selL) tryMatch();
 }
 
 function tryMatch(){
-  const lCard=document.getElementById('left-'+selectedLeft);
-  const rCard=document.getElementById('right-'+selectedRight);
-  if(selectedLeft===selectedRight){
-    lCard.classList.remove('selected'); lCard.classList.add('matched');
-    rCard.classList.remove('selected'); rCard.classList.add('matched');
-    matched[selectedLeft]=true; score+=20;
-    drawLine(selectedLeft,true);
-    selectedLeft=null; selectedRight=null;
-    updateStats();
-    if(Object.keys(matched).length===gameLetters.length){
-      clearInterval(timerInterval); gameActive=false;
-      setTimeout(()=>showResult(true),500);
-      launchConfetti();
+  const lc=document.getElementById('L'+selL), rc=document.getElementById('R'+selR);
+  if(selL===selR){
+    lc.classList.remove('selected'); lc.classList.add('matched');
+    rc.classList.remove('selected'); rc.classList.add('matched');
+    matched[selL]=true; score+=20; drawLine(selL,true);
+    selL=null; selR=null; updateStats();
+    if(Object.keys(matched).length===letters.length){
+      clearInterval(timerInt); active=false;
+      setTimeout(()=>showResult(true),500); confetti();
     }
   } else {
-    lCard.classList.remove('selected'); lCard.classList.add('wrong');
-    rCard.classList.remove('selected'); rCard.classList.add('wrong');
+    lc.classList.remove('selected'); lc.classList.add('wrong');
+    rc.classList.remove('selected'); rc.classList.add('wrong');
     errors++; score=Math.max(0,score-5); updateStats();
-    setTimeout(()=>{ lCard.classList.remove('wrong'); rCard.classList.remove('wrong'); },400);
-    selectedLeft=null; selectedRight=null;
+    setTimeout(()=>{lc.classList.remove('wrong');rc.classList.remove('wrong');},350);
+    selL=null; selR=null;
   }
 }
 
-function getCardCenter(el){
-  const area=document.getElementById('svg-center');
-  const areaRect=area.getBoundingClientRect();
-  const rect=el.getBoundingClientRect();
-  return { x:rect.left+rect.width/2-areaRect.left, y:rect.top+rect.height/2-areaRect.top };
+function getCenter(el){
+  const mid=document.getElementById('svgmid');
+  const mr=mid.getBoundingClientRect(), er=el.getBoundingClientRect();
+  return {x:er.left+er.width/2-mr.left, y:er.top+er.height/2-mr.top};
 }
 
-function drawLine(letter,correct){
-  const lCard=document.getElementById('left-'+letter);
-  const rCard=document.getElementById('right-'+letter);
-  if(!lCard||!rCard) return;
+function drawLine(lt,ok){
+  const lc=document.getElementById('L'+lt), rc=document.getElementById('R'+lt);
+  if(!lc||!rc) return;
   const svg=document.getElementById('connection-svg');
-  const lPos=getCardCenter(lCard), rPos=getCardCenter(rCard);
+  const lp=getCenter(lc), rp=getCenter(rc);
   const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-  line.setAttribute('x1',lPos.x); line.setAttribute('y1',lPos.y);
-  line.setAttribute('x2',rPos.x); line.setAttribute('y2',rPos.y);
-  line.setAttribute('stroke',correct?'#22c55e':'#ef4444');
-  line.setAttribute('stroke-width','2.5');
-  line.setAttribute('stroke-dasharray','6,3');
-  line.setAttribute('opacity','0.75');
+  line.setAttribute('x1',lp.x); line.setAttribute('y1',lp.y);
+  line.setAttribute('x2',rp.x); line.setAttribute('y2',rp.y);
+  line.setAttribute('stroke',ok?'#22c55e':'#ef4444');
+  line.setAttribute('stroke-width','2');
+  line.setAttribute('stroke-dasharray','5,3');
+  line.setAttribute('opacity','0.8');
   svg.appendChild(line);
 }
 
-function clearLines(){ document.getElementById('connection-svg').innerHTML=''; }
+function clearLines(){document.getElementById('connection-svg').innerHTML='';}
 
 function showResult(won){
-  const done=Object.keys(matched).length, total=gameLetters.length;
-  let stars=errors===0?'⭐⭐⭐':errors<=3?'⭐⭐':'⭐';
-  document.getElementById('result-title').textContent=won?'¡Completado! 🎉':'⏰ ¡Tiempo!';
-  document.getElementById('result-stars').textContent=stars;
-  document.getElementById('result-score').textContent='Puntuación: '+score;
-  document.getElementById('result-detail').textContent='Conectaste '+done+' de '+total+' letras con '+errors+' error'+(errors!==1?'es':'')+ '.';
-  document.getElementById('result-overlay').classList.add('active');
+  const done=Object.keys(matched).length, tot=letters.length;
+  const stars=errors===0?'⭐⭐⭐':errors<=3?'⭐⭐':'⭐';
+  document.getElementById('rtitle').textContent=won?'¡Completado! 🎉':'⏰ ¡Tiempo!';
+  document.getElementById('rstars').textContent=stars;
+  document.getElementById('rscore').textContent='Puntuación: '+score;
+  document.getElementById('rdetail').textContent='Conectaste '+done+' de '+tot+' con '+errors+' error'+(errors!==1?'es':'.')+'.';
+  document.getElementById('result-ov').classList.add('active');
 }
 
-function launchConfetti(){
-  const colors=['#ffd200','#f7971e','#22c55e','#64b4ff','#f472b6'];
-  for(let i=0;i<40;i++) setTimeout(()=>{
+function confetti(){
+  const cols=['#ffd200','#f7971e','#22c55e','#64b4ff','#f472b6'];
+  for(let i=0;i<36;i++) setTimeout(()=>{
     const p=document.createElement('div'); p.className='confetti-piece';
-    p.style.left=Math.random()*100+'vw'; p.style.top='-10px';
-    p.style.background=colors[Math.floor(Math.random()*colors.length)];
-    p.style.transform='rotate('+Math.random()*360+'deg)';
+    p.style.left=Math.random()*100+'vw';
+    p.style.background=cols[Math.floor(Math.random()*cols.length)];
     p.style.animationDuration=(1.2+Math.random()*0.8)+'s';
     document.body.appendChild(p); setTimeout(()=>p.remove(),2500);
-  },i*40);
+  },i*45);
 }
 
-function openHintModal(){
-  if(!gameActive) return;
-  const grid=document.getElementById('hint-letters-grid');
-  grid.innerHTML='';
-  const unmatched=gameLetters.filter(l=>!matched[l]);
-  if(!unmatched.length) return;
-  unmatched.forEach(letter=>{
-    const btn=document.createElement('button');
-    btn.className='hint-letter-btn'; btn.textContent=letter;
-    btn.onclick=()=>showHintPreview(letter);
-    grid.appendChild(btn);
+function openHint(){
+  if(!active) return;
+  const grid=document.getElementById('hgrid'); grid.innerHTML='';
+  const um=letters.filter(l=>!matched[l]);
+  if(!um.length) return;
+  um.forEach(lt=>{
+    const b=document.createElement('button'); b.className='hlb'; b.textContent=lt;
+    b.onclick=()=>showHintPrev(lt); grid.appendChild(b);
   });
-  document.getElementById('hint-step1').style.display='';
-  document.getElementById('hint-step2').style.display='none';
-  document.getElementById('hint-overlay').classList.add('active');
+  document.getElementById('hs1').style.display='';
+  document.getElementById('hs2').style.display='none';
+  document.getElementById('hint-ov').classList.add('active');
 }
 
-function showHintPreview(letter){
-  const preview=document.getElementById('hint-preview');
-  preview.innerHTML='<div class="hint-preview-letter">'+letter+'</div><div style="color:#a0b4cc;font-size:20px;">→</div><img src="'+SIGN_IMAGES[letter]+'" alt="Seña '+letter+'">';
-  document.getElementById('hint-step1').style.display='none';
-  document.getElementById('hint-step2').style.display='';
-  document.getElementById('btn-use-hint').onclick=()=>applyHint(letter);
+function showHintPrev(lt){
+  document.getElementById('hprev').innerHTML='<div class="hint-ltr">'+lt+'</div><div style="color:#a0b4cc;font-size:18px;">→</div><img src="'+SIGN_IMAGES[lt]+'" alt="'+lt+'">';
+  document.getElementById('hs1').style.display='none';
+  document.getElementById('hs2').style.display='';
+  document.getElementById('buse').onclick=()=>applyHint(lt);
 }
 
-function backToStep1(){
-  document.getElementById('hint-step1').style.display='';
-  document.getElementById('hint-step2').style.display='none';
-}
+function back1(){document.getElementById('hs1').style.display='';document.getElementById('hs2').style.display='none';}
+function closeHint(){document.getElementById('hint-ov').classList.remove('active');}
 
-function applyHint(letter){
-  score=Math.max(0,score-10); updateStats(); closeHintModal();
-  const lCard=document.getElementById('left-'+letter);
-  const rCard=document.getElementById('right-'+letter);
-  if(lCard){ lCard.classList.remove('selected','wrong'); lCard.classList.add('matched'); }
-  if(rCard){ rCard.classList.remove('selected','wrong'); rCard.classList.add('matched'); }
-  matched[letter]=true;
-  drawLine(letter,true); updateStats();
-  if(selectedLeft===letter) selectedLeft=null;
-  if(selectedRight===letter) selectedRight=null;
-  if(Object.keys(matched).length===gameLetters.length){
-    clearInterval(timerInterval); gameActive=false;
+function applyHint(lt){
+  score=Math.max(0,score-10); updateStats(); closeHint();
+  ['L'+lt,'R'+lt].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('selected','wrong');el.classList.add('matched');}
+  });
+  matched[lt]=true; drawLine(lt,true); updateStats();
+  if(selL===lt) selL=null; if(selR===lt) selR=null;
+  if(Object.keys(matched).length===letters.length){
+    clearInterval(timerInt); active=false;
     setTimeout(()=>showResult(true),400);
   }
 }
-
-function closeHintModal(){ document.getElementById('hint-overlay').classList.remove('active'); }
 
 resetGame();
 </script>
