@@ -302,15 +302,22 @@ function renderCards(animate){
     const c=document.createElement('div');
     c.className='card'+(animate?' pop-in':'');
     c.id='L'+lt; c.textContent=lt;
-    c.onclick=()=>pickL(lt); lc.appendChild(c);
+    c.tabIndex = 0;
+    c.onclick=()=>pickL(lt);
+    c.onkeydown=(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); pickL(lt);}};
+    lc.appendChild(c);
   });
   rOrd.forEach(lt=>{
     const c=document.createElement('div');
     c.className='sign-card'+(animate?' pop-in':'');
     c.id='R'+lt;
+    c.tabIndex = 0;
     const img=document.createElement('img');
     img.src=SIGN_IMAGES[lt]; img.alt=lt;
-    c.appendChild(img); c.onclick=()=>pickR(lt); rc.appendChild(c);
+    c.appendChild(img);
+    c.onclick=()=>pickR(lt);
+    c.onkeydown=(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); pickR(lt);}};
+    rc.appendChild(c);
   });
 
   setTimeout(()=>{
@@ -726,6 +733,33 @@ function applyHint(lt){
 ============================== */
 loadData();
 setDiffMenu(diff);
+
+/* ==============================
+   PWA & SERVICE WORKER
+============================== */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = document.getElementById('btn-install');
+  if(btn) btn.style.display = 'flex';
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      deferredPrompt = null;
+      document.getElementById('btn-install').style.display = 'none';
+    });
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW reg fail:', err));
+  });
+}
 
 /* ==============================
    FIREBASE LEADERBOARD

@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Señas & Letras</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icon.png">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -24,6 +26,8 @@
         <button class="dropdown-item active" id="nav-game-btn" onclick="showScreenMenu('game')">🎮 Juego</button>
         <button class="dropdown-item" id="nav-repaso-btn" onclick="showScreenMenu('repaso')">📖 Repasar</button>
         <button class="dropdown-item" id="nav-leaderboard-btn" onclick="showScreenMenu('leaderboard')">🏆 Récords Globales</button>
+        <div class="dropdown-sep"></div>
+        <button class="dropdown-item" id="btn-install" style="display:none; color:#22c55e;" onclick="installPWA()">📲 Instalar App</button>
       </div>
     </div>
   </div>
