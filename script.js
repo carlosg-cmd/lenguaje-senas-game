@@ -613,11 +613,10 @@ function showResult(won){
     
     // PUSH SCORE TO FIREBASE
     setTimeout(() => {
-        let defaultName = localStorage.getItem('senasPlayerName') || '';
-        const nickname = prompt(`¡Conseguiste ${score} puntos! Ingresa tu apodo para la Tabla de Récords Globales:`, defaultName);
-        if(nickname && nickname.trim().length > 0) {
-            localStorage.setItem('senasPlayerName', nickname.trim());
-            saveGlobalScore(nickname.trim(), score, diff);
+        if(currentUser) {
+            saveGlobalScore(currentUser.displayName, score, diff, currentUser.photoURL, currentUser.uid);
+        } else {
+            alert(`¡Conseguiste ${score} puntos! Tu récord se guardó localmente. Inicia sesión desde el menú para competir en el Top 10 Global.`);
         }
     }, 500);
   }
@@ -775,12 +774,14 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-async function saveGlobalScore(nickname, currentScore, currentDiff) {
+async function saveGlobalScore(nickname, currentScore, currentDiff, photoURL = null, uid = null) {
   try {
     await db.collection("highscores").add({
       nickname: nickname,
       score: currentScore,
       difficulty: currentDiff,
+      photoURL: photoURL,
+      uid: uid,
       date: firebase.firestore.FieldValue.serverTimestamp()
     });
   } catch (e) {
@@ -805,10 +806,14 @@ async function fetchGlobalScores(d) {
     const querySnapshot = await q.get();
     let html = "";
     let rank = 1;
-    querySnapshot.forEach((doc) => {
       const data = doc.data();
+      const pfp = data.photoURL || 'assets/icon.png';
       html += `<div style="display:flex; justify-content:space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; align-items: center;">
-        <span style="font-size: 14px;"><strong>#${rank}</strong> <span style="margin-left: 8px;">${data.nickname}</span></span>
+        <span style="font-size: 14px; display:flex; align-items:center; gap:8px;">
+          <strong>#${rank}</strong> 
+          <img src="${pfp}" style="width:24px; height:24px; border-radius:50%; object-fit:cover;">
+          <span>${data.nickname}</span>
+        </span>
         <span style="color:#eab308; font-weight:bold; font-size: 16px;">${data.score} pts</span>
       </div>`;
       rank++;
@@ -826,4 +831,47 @@ async function fetchGlobalScores(d) {
     lbTitle.textContent = msg;
     lbList.innerHTML = "<div style='text-align:center; color:#ef4444; font-size: 12px;'>" + e.message + "</div>";
   }
+}
+
+/* ==============================
+   FIREBASE AUTHENTICATION
+============================== */
+let currentUser = null;
+
+firebase.auth().onAuthStateChanged((user) => {
+  const profileDiv = document.getElementById('user-profile');
+  const avatarImg = document.getElementById('user-avatar');
+  const btnLogin = document.getElementById('btn-login');
+  const btnLogout = document.getElementById('btn-logout');
+
+  if (user) {
+    currentUser = user;
+    if(avatarImg && user.photoURL) avatarImg.src = user.photoURL;
+    if(profileDiv) profileDiv.style.display = 'flex';
+    if(btnLogin) btnLogin.style.display = 'none';
+    if(btnLogout) btnLogout.style.display = 'flex';
+  } else {
+    currentUser = null;
+    if(profileDiv) profileDiv.style.display = 'none';
+    if(btnLogin) btnLogin.style.display = 'flex';
+    if(btnLogout) btnLogout.style.display = 'none';
+  }
+});
+
+function loginWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .then((result) => {
+      console.log('User logged in:', result.user);
+      closeMenu();
+    }).catch((error) => {
+      console.error('Login error:', error);
+      alert('Error al iniciar sesión: ' + error.message);
+    });
+}
+
+function logout() {
+  firebase.auth().signOut().then(() => {
+    closeMenu();
+  });
 }

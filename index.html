@@ -13,7 +13,10 @@
 <!-- TOP BAR WITH DROPDOWN -->
 <div class="topbar">
   <div class="topbar-title">✋ Señas & Letras</div>
-  <div style="display: flex; gap: 8px;">
+  <div style="display: flex; gap: 8px; align-items: center;">
+    <div id="user-profile" style="display:none; align-items: center; gap: 6px; margin-right: 4px;">
+        <img id="user-avatar" src="" style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #f7971e;" alt="Avatar">
+    </div>
     <button class="menu-btn" id="sound-toggle" onclick="toggleSound()" title="Activar/Desactivar Sonido">🔊</button>
     <div style="position:relative;">
       <button class="menu-btn" id="menu-toggle" onclick="toggleMenu()">☰</button>
@@ -28,6 +31,8 @@
         <button class="dropdown-item" id="nav-leaderboard-btn" onclick="showScreenMenu('leaderboard')">🏆 Récords Globales</button>
         <div class="dropdown-sep"></div>
         <button class="dropdown-item" id="btn-install" style="display:none; color:#22c55e;" onclick="installPWA()">📲 Instalar App</button>
+        <button class="dropdown-item" id="btn-login" onclick="loginWithGoogle()">👤 Iniciar Sesión</button>
+        <button class="dropdown-item" id="btn-logout" style="display:none; color:#ef4444;" onclick="logout()">🚪 Cerrar Sesión</button>
       </div>
     </div>
   </div>
@@ -157,11 +162,11 @@
   </div>
 </div>
 
-<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<!-- Firebase App (the core Firebase SDK) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<!-- Add Firebase products that you want to use -->
+<!-- Add Firebase Products that you want to use -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
