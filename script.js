@@ -243,12 +243,11 @@ function buildRepaso(){
       <span style="color:#ef4444">✗${st.wrong}</span>
       <span style="color:#3b82f6">💡${st.hints}</span>
     </div>`;
-    rg.appendChild(card);
+    grid.appendChild(card);
   });
 }
 
 function setCategoryMenu(cat, el) {
-  if(active) return;
   ['cat-abecedario','cat-numeros','cat-colores'].forEach(id => {
       const elbtn = document.getElementById(id);
       if(elbtn) elbtn.classList.remove('active');
