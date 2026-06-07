@@ -845,7 +845,10 @@ firebase.auth().onAuthStateChanged((user) => {
     if(btnLogin) btnLogin.style.display = 'none';
     if(btnLogout) btnLogout.style.display = 'flex';
     const loginOv = document.getElementById('login-ov');
-    if(loginOv) loginOv.classList.remove('active');
+    if(loginOv && loginOv.classList.contains('active')) {
+      loginOv.classList.remove('active');
+      document.getElementById('welcome-ov').classList.add('active');
+    }
   } else {
     currentUser = null;
     if(profileDiv) profileDiv.style.display = 'none';
@@ -871,6 +874,7 @@ function gatewayLogin() {
   firebase.auth().signInWithPopup(provider)
     .then((result) => {
       document.getElementById('login-ov').classList.remove('active');
+      document.getElementById('welcome-ov').classList.add('active');
     }).catch((error) => {
       alert('Error al iniciar sesión: ' + error.message);
     });
@@ -878,6 +882,7 @@ function gatewayLogin() {
 
 function playAsGuest() {
   document.getElementById('login-ov').classList.remove('active');
+  document.getElementById('welcome-ov').classList.add('active');
 }
 
 function logout() {
