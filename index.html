@@ -23,6 +23,7 @@
         <div class="dropdown-sep"></div>
         <button class="dropdown-item active" id="nav-game-btn" onclick="showScreenMenu('game')">🎮 Juego</button>
         <button class="dropdown-item" id="nav-repaso-btn" onclick="showScreenMenu('repaso')">📖 Repasar</button>
+        <button class="dropdown-item" id="nav-leaderboard-btn" onclick="showScreenMenu('leaderboard')">🏆 Récords Globales</button>
       </div>
     </div>
   </div>
@@ -76,6 +77,25 @@
     </div>
   </div>
   <div class="repaso-grid" id="repaso-grid"></div>
+</div>
+
+<!-- LEADERBOARD SCREEN -->
+<div class="screen" id="screen-leaderboard">
+  <div class="repaso-hdr">
+    <div class="repaso-title">🏆 Top 10 Global</div>
+    <div class="repaso-sub">Compara tus puntajes con jugadores de todo el mundo</div>
+    <div style="margin-top:12px; display:flex; justify-content:center; gap:8px;">
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(34, 197, 94, 0.2); color: #22c55e; border-color: rgba(34, 197, 94, 0.4);" onclick="fetchGlobalScores('easy')">Fácil</button>
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(234, 179, 8, 0.2); color: #eab308; border-color: rgba(234, 179, 8, 0.4);" onclick="fetchGlobalScores('medium')">Medio</button>
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="fetchGlobalScores('hard')">Difícil</button>
+    </div>
+  </div>
+  <div style="max-width: 400px; margin: 20px auto; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px;">
+    <h3 id="lb-title" style="text-align:center; font-size: 14px; margin-bottom: 15px; color: #f1f5f9;">Cargando...</h3>
+    <div id="lb-list" style="display:flex; flex-direction:column; gap:8px;">
+      <!-- Scores will be injected here -->
+    </div>
+  </div>
 </div>
 
 <!-- WELCOME OVERLAY -->
@@ -132,6 +152,11 @@
     <button class="btn-again" onclick="resetGame();document.getElementById('result-ov').classList.remove('active')">🔄 Jugar de nuevo</button>
   </div>
 </div>
+
+<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<!-- Add Firebase products that you want to use -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script src="script.js"></script>
 </body>

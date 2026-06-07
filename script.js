@@ -180,7 +180,7 @@ function setDiffMenu(d, btn){
 function showScreenMenu(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
-  ['nav-game-btn','nav-repaso-btn'].forEach(bid => {
+  ['nav-game-btn','nav-repaso-btn','nav-leaderboard-btn'].forEach(bid => {
     const el = document.getElementById(bid);
     if(el) el.classList.remove('active');
   });
@@ -188,6 +188,7 @@ function showScreenMenu(id){
   if(activeBtn) activeBtn.classList.add('active');
   closeMenu();
   if(id==='repaso') buildRepaso();
+  if(id==='leaderboard') fetchGlobalScores(diff);
   if(id==='game'){ clearInterval(timerInt); resetGame(); }
 }
 
@@ -602,6 +603,16 @@ function showResult(won){
     if(scores[0] === score && score > 0) isNewRecord = true;
     appData.highscores[diff] = scores;
     saveData();
+    
+    // PUSH SCORE TO FIREBASE
+    setTimeout(() => {
+        let defaultName = localStorage.getItem('senasPlayerName') || '';
+        const nickname = prompt(`¡Conseguiste ${score} puntos! Ingresa tu apodo para la Tabla de Récords Globales:`, defaultName);
+        if(nickname && nickname.trim().length > 0) {
+            localStorage.setItem('senasPlayerName', nickname.trim());
+            saveGlobalScore(nickname.trim(), score, diff);
+        }
+    }, 500);
   }
 
   document.getElementById('rtitle').textContent=won?'¡Abecedario completo! 🎉':'⏰ ¡Se acabó el tiempo!';
@@ -715,3 +726,70 @@ function applyHint(lt){
 ============================== */
 loadData();
 setDiffMenu(diff);
+
+/* ==============================
+   FIREBASE LEADERBOARD
+============================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBl59bWU0aNoGbPzKiGGVErIr40tEdp86U",
+  authDomain: "juego-de-senas.firebaseapp.com",
+  projectId: "juego-de-senas",
+  storageBucket: "juego-de-senas.firebasestorage.app",
+  messagingSenderId: "16907373133",
+  appId: "1:16907373133:web:78719626c2d6969afeaa04"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+async function saveGlobalScore(nickname, currentScore, currentDiff) {
+  try {
+    await db.collection("highscores").add({
+      nickname: nickname,
+      score: currentScore,
+      difficulty: currentDiff,
+      date: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) {
+    console.error("Error al guardar en Firebase:", e);
+  }
+}
+
+async function fetchGlobalScores(d) {
+  const lbTitle = document.getElementById('lb-title');
+  const lbList = document.getElementById('lb-list');
+  if(!lbTitle || !lbList) return;
+
+  lbTitle.textContent = "Cargando " + (d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil') + "...";
+  lbList.innerHTML = "";
+  
+  try {
+    const q = db.collection("highscores")
+      .where("difficulty", "==", d)
+      .orderBy("score", "desc")
+      .limit(10);
+      
+    const querySnapshot = await q.get();
+    let html = "";
+    let rank = 1;
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      html += `<div style="display:flex; justify-content:space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; align-items: center;">
+        <span style="font-size: 14px;"><strong>#${rank}</strong> <span style="margin-left: 8px;">${data.nickname}</span></span>
+        <span style="color:#eab308; font-weight:bold; font-size: 16px;">${data.score} pts</span>
+      </div>`;
+      rank++;
+    });
+    if (html === "") html = "<div style='text-align:center; color:#94a3b8; padding: 20px 0;'>Aún no hay récords globales en esta dificultad.<br>¡Juega y sé el primero! 🚀</div>";
+    lbList.innerHTML = html;
+    lbTitle.textContent = "🏆 Top 10 Global - " + (d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil');
+  } catch(e) {
+    console.error(e);
+    let msg = "Error al cargar récords.";
+    if (e.message && e.message.includes("indexes")) {
+        msg = "Falta crear el índice en Firebase. Revisa la consola.";
+        console.warn("Ve a Firebase Console -> Firestore -> Indexes y crea un índice compuesto para: collection 'highscores', fields 'difficulty' (Ascending) y 'score' (Descending).");
+    }
+    lbTitle.textContent = msg;
+    lbList.innerHTML = "<div style='text-align:center; color:#ef4444; font-size: 12px;'>" + e.message + "</div>";
+  }
+}
