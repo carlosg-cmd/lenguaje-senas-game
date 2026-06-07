@@ -225,8 +225,6 @@ function buildRepaso(){
   const grid=document.getElementById('repaso-grid');
   grid.innerHTML='';
   ALL.forEach(lt=>{
-    const card=document.createElement('div');
-    const stats = appData.letterStats[lt];
     const st=appData.letterStats[currentCategory][lt];
     const total = st.correct + st.wrong;
     const wrate = total>0?(st.wrong/total):0;
@@ -446,14 +444,13 @@ function reshuffleRemaining(){
    SELECTION & MATCHING
 ============================== */
 function pickL(lt){
-  if(selR===lt){
-    playSnd(sCorrect);
-    matchedCount++;
-    appData.letterStats[currentCategory][lt].correct++; saveData();
-    playWrong();
-    setTimeout(()=>{ lc.classList.remove('wrong'); rc.classList.remove('wrong'); },350);
-    selL=null; selR=null;
-  }
+  if(!active) return;
+  const lc=document.getElementById('L'+lt);
+  if(!lc||lc.classList.contains('matched')) return;
+  if(selL===lt){ lc.classList.remove('selected'); selL=null; return; }
+  if(selL){ const prev=document.getElementById('L'+selL); if(prev) prev.classList.remove('selected'); }
+  selL=lt; lc.classList.add('selected');
+  if(selR) tryMatch();
 }
 
 function pickR(lt){
