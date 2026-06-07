@@ -21,11 +21,7 @@
     <div style="position:relative;">
       <button class="menu-btn" id="menu-toggle" onclick="toggleMenu()">☰</button>
       <div class="dropdown-menu" id="dropdown-menu">
-        <div class="dropdown-label">Categoría</div>
-        <button class="dropdown-item active" id="cat-abecedario" onclick="setCategoryMenu('abecedario',this)">🔤 Abecedario</button>
-        <button class="dropdown-item" id="cat-numeros" onclick="setCategoryMenu('numeros',this)">🔢 Números</button>
-        <button class="dropdown-item" id="cat-colores" onclick="setCategoryMenu('colores',this)">🎨 Colores</button>
-        <div class="dropdown-sep"></div>
+
         <div class="dropdown-label">Dificultad</div>
         <button class="dropdown-item active" id="diff-easy" onclick="setDiffMenu('easy',this)">🟢 Fácil</button>
         <button class="dropdown-item" id="diff-medium" onclick="setDiffMenu('medium',this)">🟡 Medio</button>
@@ -126,7 +122,23 @@
       <div class="w-step"><span class="w-step-icon">💡</span><span>Usa <strong>Pista</strong> si te atascas — cuesta 10 pts</span></div>
       <div class="w-step"><span class="w-step-icon">☰</span><span>Cambia <strong>dificultad</strong> desde el menú arriba a la derecha</span></div>
     </div>
-    <button class="btn-start" onclick="document.getElementById('welcome-ov').classList.remove('active')">¡Aprendamos! 🚀</button>
+    <button class="btn-start" onclick="document.getElementById('welcome-ov').classList.remove('active')">¡Empezar a Jugar! 🚀</button>
+  </div>
+</div>
+
+<!-- LOGIN GATEWAY OVERLAY -->
+<div class="overlay active" id="login-ov">
+  <div class="wmodal" style="text-align: center;">
+    <div class="w-emoji">✋</div>
+    <div class="w-title">Señas & Letras</div>
+    <p class="w-sub" style="margin-bottom: 24px;">Compite en la tabla mundial guardando tus récords, o juega localmente.</p>
+    <button class="btn-start" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="gatewayLogin()">
+      <span>👤 Iniciar Sesión con Google</span>
+    </button>
+    <button class="btn-cancel" style="width: 100%; border: 1px solid rgba(255,255,255,0.2); color: #a0b4cc; background: transparent; padding: 12px; font-weight: bold; border-radius: 8px;" onclick="playAsGuest()">
+      Jugar como Invitado
+    </button>
+    <div style="margin-top: 16px; font-size: 11px; color: #64748b;">Podrás iniciar sesión más tarde desde el menú.</div>
   </div>
 </div>
 

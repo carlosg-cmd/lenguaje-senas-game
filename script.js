@@ -1,23 +1,12 @@
-const CATEGORIES = {
-  abecedario: {
-    "A": "assets/signs/A.png", "B": "assets/signs/B.png", "C": "assets/signs/C.png", "D": "assets/signs/D.png", "E": "assets/signs/E.png",
-    "F": "assets/signs/F.png", "G": "assets/signs/G.png", "H": "assets/signs/H.png", "I": "assets/signs/I.png", "J": "assets/signs/J.png",
-    "K": "assets/signs/K.png", "L": "assets/signs/L.png", "M": "assets/signs/M.png", "N": "assets/signs/N.png", "Ñ": "assets/signs/Ñ.png",
-    "O": "assets/signs/O.png", "P": "assets/signs/P.png", "Q": "assets/signs/Q.png", "R": "assets/signs/R.png", "S": "assets/signs/S.png",
-    "T": "assets/signs/T.png", "U": "assets/signs/U.png", "V": "assets/signs/V.png", "W": "assets/signs/W.png", "X": "assets/signs/X.png",
-    "Y": "assets/signs/Y.png", "Z": "assets/signs/Z.png"
-  },
-  numeros: {
-    "1": "assets/signs/numeros/1.png", "2": "assets/signs/numeros/2.png", "3": "assets/signs/numeros/3.png", "4": "assets/signs/numeros/4.png", "5": "assets/signs/numeros/5.png",
-    "6": "assets/signs/numeros/6.png", "7": "assets/signs/numeros/7.png", "8": "assets/signs/numeros/8.png", "9": "assets/signs/numeros/9.png", "10": "assets/signs/numeros/10.png"
-  },
-  colores: {
-    "Rojo": "assets/signs/colores/Rojo.png", "Azul": "assets/signs/colores/Azul.png", "Verde": "assets/signs/colores/Verde.png", "Amarillo": "assets/signs/colores/Amarillo.png"
-  }
+const SIGN_IMAGES = {
+  "A": "assets/signs/A.png", "B": "assets/signs/B.png", "C": "assets/signs/C.png", "D": "assets/signs/D.png", "E": "assets/signs/E.png",
+  "F": "assets/signs/F.png", "G": "assets/signs/G.png", "H": "assets/signs/H.png", "I": "assets/signs/I.png", "J": "assets/signs/J.png",
+  "K": "assets/signs/K.png", "L": "assets/signs/L.png", "M": "assets/signs/M.png", "N": "assets/signs/N.png", "Ñ": "assets/signs/Ñ.png",
+  "O": "assets/signs/O.png", "P": "assets/signs/P.png", "Q": "assets/signs/Q.png", "R": "assets/signs/R.png", "S": "assets/signs/S.png",
+  "T": "assets/signs/T.png", "U": "assets/signs/U.png", "V": "assets/signs/V.png", "W": "assets/signs/W.png", "X": "assets/signs/X.png",
+  "Y": "assets/signs/Y.png", "Z": "assets/signs/Z.png"
 };
 
-let currentCategory = 'abecedario';
-let SIGN_IMAGES = CATEGORIES[currentCategory];
 let ALL = Object.keys(SIGN_IMAGES);
 const VISIBLE = 5;
 const DIFF_CONFIG = {
@@ -58,62 +47,37 @@ let active = false;
 let appData = {
   soundOn: true,
   lastDiff: 'easy',
-  lastCat: 'abecedario',
-  highscores: {
-    abecedario: { easy: [], medium: [], hard: [] },
-    numeros: { easy: [], medium: [], hard: [] },
-    colores: { easy: [], medium: [], hard: [] }
-  },
-  letterStats: {} // Will be migrated to nested obj
+  highscores: { easy: [], medium: [], hard: [] },
+  letterStats: {}
 };
-Object.keys(CATEGORIES).forEach(cat => {
-    appData.letterStats[cat] = {};
-    Object.keys(CATEGORIES[cat]).forEach(l => appData.letterStats[cat][l] = { correct: 0, wrong: 0, hints: 0 });
-});
+ALL.forEach(l => appData.letterStats[l] = { correct: 0, wrong: 0, hints: 0 });
 
 function loadData() {
   const saved = localStorage.getItem('senasGameData');
   if (saved) {
     try {
       let parsed = JSON.parse(saved);
-      // Migrate old data
-      if(parsed.highscores && Array.isArray(parsed.highscores.easy)) {
-        let oldScores = parsed.highscores;
-        let oldStats = parsed.letterStats || {};
-        parsed.highscores = { abecedario: oldScores, numeros: {easy:[],medium:[],hard:[]}, colores: {easy:[],medium:[],hard:[]} };
-        parsed.letterStats = { abecedario: oldStats, numeros: {}, colores: {} };
+      // Migrate back from category-nested data if they have it
+      if(parsed.highscores && parsed.highscores.abecedario) {
+        parsed.highscores = parsed.highscores.abecedario;
+        parsed.letterStats = parsed.letterStats.abecedario || {};
       }
       appData = { ...appData, ...parsed };
       
-      // Ensure all cats exist
-      Object.keys(CATEGORIES).forEach(cat => {
-        if(!appData.letterStats[cat]) appData.letterStats[cat] = {};
-        Object.keys(CATEGORIES[cat]).forEach(l => {
-            if(!appData.letterStats[cat][l]) appData.letterStats[cat][l] = { correct: 0, wrong: 0, hints: 0 };
-        });
+      // Ensure all letters exist
+      ALL.forEach(l => {
+          if(!appData.letterStats[l]) appData.letterStats[l] = { correct: 0, wrong: 0, hints: 0 };
       });
     } catch(e){}
   }
   soundOn = appData.soundOn;
   diff = appData.lastDiff || 'easy';
-  currentCategory = appData.lastCat || 'abecedario';
-  SIGN_IMAGES = CATEGORIES[currentCategory];
-  ALL = Object.keys(SIGN_IMAGES);
   updateSoundIcon();
-  
-  // Set UI Active buttons
-  ['cat-abecedario','cat-numeros','cat-colores'].forEach(id => {
-      const el = document.getElementById(id);
-      if(el) el.classList.remove('active');
-  });
-  const catBtn = document.getElementById('cat-'+currentCategory);
-  if(catBtn) catBtn.classList.add('active');
 }
 
 function saveData() {
   appData.soundOn = soundOn;
   appData.lastDiff = diff;
-  appData.lastCat = currentCategory;
   localStorage.setItem('senasGameData', JSON.stringify(appData));
 }
 
@@ -225,7 +189,7 @@ function buildRepaso(){
   const grid=document.getElementById('repaso-grid');
   grid.innerHTML='';
   ALL.forEach(lt=>{
-    const st=appData.letterStats[currentCategory][lt];
+    const st=appData.letterStats[lt];
     const total = st.correct + st.wrong;
     const wrate = total>0?(st.wrong/total):0;
     
@@ -247,28 +211,11 @@ function buildRepaso(){
   });
 }
 
-function setCategoryMenu(cat, el) {
-  ['cat-abecedario','cat-numeros','cat-colores'].forEach(id => {
-      const elbtn = document.getElementById(id);
-      if(elbtn) elbtn.classList.remove('active');
-  });
-  if(el) el.classList.add('active');
-  currentCategory = cat;
-  SIGN_IMAGES = CATEGORIES[currentCategory];
-  ALL = Object.keys(SIGN_IMAGES);
-  saveData();
-  closeMenu();
-  resetGame();
-  
-  // Refresh leaderboard if we are on it
-  if(document.getElementById('screen-leaderboard').classList.contains('active')) {
-      fetchGlobalScores(diff);
-  }
-}
+
 
 function clearStats() {
     if(confirm('¿Seguro que deseas borrar todas las estadísticas de aprendizaje?')) {
-        ALL.forEach(l => appData.letterStats[currentCategory][l] = { correct: 0, wrong: 0, hints: 0 });
+        ALL.forEach(l => appData.letterStats[l] = { correct: 0, wrong: 0, hints: 0 });
         saveData();
         buildRepaso();
     }
@@ -291,7 +238,7 @@ function resetGame(){
   matchedCount=0; errors=0; score=0; selL=null; selR=null; active=true;
   document.getElementById('result-ov').classList.remove('active');
   const hsEl = document.getElementById('hs');
-  if(hsEl) hsEl.textContent = (appData.highscores[currentCategory][diff][0] || 0);
+  if(hsEl) hsEl.textContent = (appData.highscores[diff][0] || 0);
   clearLines();
   updateStats();
   renderCards(false);
@@ -473,7 +420,7 @@ function tryMatch(){
     drawLine(matchedLetter, true);
     score+=20; matchedCount++;
     selL=null; selR=null;
-    appData.letterStats[currentCategory][matchedLetter].correct++;
+    appData.letterStats[matchedLetter].correct++;
     saveData();
     playMatch();
     updateStats();
@@ -492,8 +439,8 @@ function tryMatch(){
     lc.classList.remove('selected'); lc.classList.add('wrong');
     rc.classList.remove('selected'); rc.classList.add('wrong');
     errors++; score=Math.max(0,score-5); updateStats();
-    appData.letterStats[currentCategory][selL].wrong++;
-    appData.letterStats[currentCategory][selR].wrong++;
+    appData.letterStats[selL].wrong++;
+    appData.letterStats[selR].wrong++;
     saveData();
     playWrong();
     setTimeout(()=>{ lc.classList.remove('wrong'); rc.classList.remove('wrong'); },350);
@@ -645,18 +592,18 @@ function showResult(won){
   
   let isNewRecord = false;
   if(won || score > 0) {
-    const scores = appData.highscores[currentCategory][diff];
+    const scores = appData.highscores[diff];
     scores.push(score);
     scores.sort((a,b) => b-a);
     if(scores.length > 3) scores.pop();
     if(scores[0] === score && score > 0) isNewRecord = true;
-    appData.highscores[currentCategory][diff] = scores;
+    appData.highscores[diff] = scores;
     saveData();
     
     // PUSH SCORE TO FIREBASE
     setTimeout(() => {
         if(currentUser) {
-            saveGlobalScore(currentUser.displayName, score, diff, currentUser.photoURL, currentUser.uid, currentCategory);
+            saveGlobalScore(currentUser.displayName, score, diff, currentUser.photoURL, currentUser.uid);
         } else {
             alert(`¡Conseguiste ${score} puntos! Tu récord se guardó localmente. Inicia sesión desde el menú para competir en el Top 10 Global.`);
         }
@@ -665,9 +612,7 @@ function showResult(won){
 
   let rTitle = '⏰ ¡Se acabó el tiempo!';
   if(won) {
-      if(currentCategory === 'abecedario') rTitle = '¡Abecedario completo! 🎉';
-      else if(currentCategory === 'numeros') rTitle = '¡Números completos! 🎉';
-      else rTitle = '¡Colores completos! 🎉';
+      rTitle = '¡Completado! 🎉';
   }
   document.getElementById('rtitle').textContent = rTitle;
   document.getElementById('rstars').textContent=stars;
@@ -757,7 +702,7 @@ function applyHint(lt){
   // Wait for user to see, then apply and close
   setTimeout(()=>{
     score=Math.max(0,score-10); updateStats(); closeHint();
-    appData.letterStats[currentCategory][lt].hints++;
+    appData.letterStats[lt].hints++;
     saveData();
     playHint();
     document.getElementById('buse').disabled = false;
@@ -822,13 +767,12 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-async function saveGlobalScore(nickname, currentScore, currentDiff, photoURL = null, uid = null, category = 'abecedario') {
+async function saveGlobalScore(nickname, score, difficulty, photoURL, uid) {
   try {
     await db.collection("highscores").add({
       nickname: nickname,
-      score: currentScore,
-      difficulty: currentDiff,
-      category: category,
+      score: score,
+      difficulty: difficulty,
       photoURL: photoURL,
       uid: uid,
       date: firebase.firestore.FieldValue.serverTimestamp()
@@ -848,7 +792,6 @@ async function fetchGlobalScores(d) {
   
   try {
     const q = db.collection("highscores")
-      .where("category", "==", currentCategory)
       .where("difficulty", "==", d)
       .orderBy("score", "desc")
       .limit(10);
@@ -869,10 +812,9 @@ async function fetchGlobalScores(d) {
       </div>`;
       rank++;
     });
-    if (html === "") html = `<div style='text-align:center; color:#94a3b8; padding: 20px 0;'>Aún no hay récords en la categoría ${currentCategory.toUpperCase()}.<br>¡Juega y sé el primero! 🚀</div>`;
+    if (html === "") html = `<div style='text-align:center; color:#94a3b8; padding: 20px 0;'>Aún no hay récords.<br>¡Juega y sé el primero! 🚀</div>`;
     lbList.innerHTML = html;
-    const catName = currentCategory === 'abecedario' ? 'Abecedario' : currentCategory === 'numeros' ? 'Números' : 'Colores';
-    lbTitle.textContent = `🏆 Top 10 - ${catName} (${d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil'})`;
+    lbTitle.textContent = `🏆 Top 10 Global (${d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil'})`;
   } catch(e) {
     console.error(e);
     let msg = "Error al cargar récords.";
@@ -902,6 +844,8 @@ firebase.auth().onAuthStateChanged((user) => {
     if(profileDiv) profileDiv.style.display = 'flex';
     if(btnLogin) btnLogin.style.display = 'none';
     if(btnLogout) btnLogout.style.display = 'flex';
+    const loginOv = document.getElementById('login-ov');
+    if(loginOv) loginOv.classList.remove('active');
   } else {
     currentUser = null;
     if(profileDiv) profileDiv.style.display = 'none';
@@ -922,8 +866,24 @@ function loginWithGoogle() {
     });
 }
 
+function gatewayLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider)
+    .then((result) => {
+      document.getElementById('login-ov').classList.remove('active');
+    }).catch((error) => {
+      alert('Error al iniciar sesión: ' + error.message);
+    });
+}
+
+function playAsGuest() {
+  document.getElementById('login-ov').classList.remove('active');
+}
+
 function logout() {
   firebase.auth().signOut().then(() => {
     closeMenu();
+    // Opcional: mostrar de nuevo el gateway si cierran sesión
+    // document.getElementById('login-ov').classList.add('active');
   });
 }
