@@ -857,6 +857,7 @@ async function fetchGlobalScores(d) {
     const querySnapshot = await q.get();
     let html = "";
     let rank = 1;
+    querySnapshot.forEach((doc) => {
       const data = doc.data();
       const pfp = data.photoURL || 'assets/icon.png';
       html += `<div style="display:flex; justify-content:space-between; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px; align-items: center;">
