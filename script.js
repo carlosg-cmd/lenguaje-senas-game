@@ -222,6 +222,7 @@ function setDiffMenu(d, btn){
     }
   }
   
+  renderLevelMap();
   closeMenu();
   resetGame();
 }
@@ -318,6 +319,10 @@ function backToModeSelect() {
 function renderLevelMap() {
   const container = document.getElementById('level-nodes');
   if(!container) return;
+  
+  // Set theme class based on current difficulty
+  container.className = 'level-nodes theme-' + diff;
+  
   // Keep connector line, clear nodes
   Array.from(container.children).forEach(c => {
     if(!c.style.position || c.style.position !== 'absolute') c.remove();
