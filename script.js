@@ -1186,7 +1186,8 @@ function loginWithGoogle() {
   firebase.auth().signInWithPopup(provider)
     .then((result) => {
       console.log('User logged in:', result.user);
-      closeMenu();
+      document.getElementById('login-ov').classList.remove('active');
+      backToModeSelect();
     }).catch((error) => {
       console.error('Login error:', error);
       alert('Error al iniciar sesión: ' + error.message);
@@ -1198,7 +1199,7 @@ function gatewayLogin() {
   firebase.auth().signInWithPopup(provider)
     .then((result) => {
       document.getElementById('login-ov').classList.remove('active');
-      document.getElementById('mode-select-ov').classList.add('active');
+      backToModeSelect();
     }).catch((error) => {
       alert('Error al iniciar sesión: ' + error.message);
     });
@@ -1206,7 +1207,7 @@ function gatewayLogin() {
 
 function playAsGuest() {
   document.getElementById('login-ov').classList.remove('active');
-  document.getElementById('mode-select-ov').classList.add('active');
+  backToModeSelect();
 }
 
 function logout() {
