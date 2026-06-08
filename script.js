@@ -296,9 +296,9 @@ function selectModeGateway(mode) {
 }
 
 function backToModeSelect() {
+  showScreenMenu('game');
   document.getElementById('level-map-ov').classList.remove('active');
   document.getElementById('mode-select-ov').classList.add('active');
-  showScreenMenu('game');
 }
 
 function renderLevelMap() {
@@ -1204,7 +1204,7 @@ function playAsGuest() {
 function logout() {
   firebase.auth().signOut().then(() => {
     closeMenu();
-    // Opcional: mostrar de nuevo el gateway si cierran sesión
-    // document.getElementById('login-ov').classList.add('active');
+    showScreenMenu('game');
+    document.getElementById('login-ov').classList.add('active');
   });
 }
