@@ -1484,6 +1484,19 @@ function closeProfile() {
 }
 
 /* ==============================
+   CREDITS LOGIC
+============================== */
+function showCredits() {
+  document.getElementById('mode-select-ov').classList.remove('active');
+  document.getElementById('credits-ov').classList.add('active');
+}
+
+function closeCredits() {
+  document.getElementById('credits-ov').classList.remove('active');
+  document.getElementById('mode-select-ov').classList.add('active');
+}
+
+/* ==============================
    SOCIAL & EXIT LOGIC
 ============================== */
 function exitApp() {
