@@ -418,3 +418,42 @@ body.danger-mode {
   50% { box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.6); }
   100% { box-shadow: inset 0 0 0px rgba(239, 68, 68, 0); }
 }
+
+/* ==============================
+   INTRO ANIMATION
+============================== */
+.intro-card {
+  position: absolute;
+  width: 50px;
+  height: 70px;
+  background: white;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a2744;
+  top: -100px;
+  animation-fill-mode: forwards;
+}
+
+.intro-card img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+
+@keyframes fallDown {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(120vh) rotate(360deg); opacity: 1; }
+}
+
+@keyframes flyToCenter {
+  100% { 
+    transform: translate(calc(50vw - 25px), calc(50vh - 35px)) rotate(0deg) scale(0.1); 
+    opacity: 0; 
+  }
+}

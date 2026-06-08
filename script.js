@@ -1236,10 +1236,72 @@ function applyHint(lt){
 }
 
 /* ==============================
-   BOOT
+   BOOT & INTRO ANIMATION
 ============================== */
 loadData();
 setDiffMenu(diff);
+
+function playIntroAnimation() {
+  const introOv = document.getElementById('intro-ov');
+  const container = document.getElementById('intro-cards-container');
+  const logo = document.getElementById('intro-logo');
+  
+  if(!introOv || !container || !logo) return;
+  
+  // Si ya se ha visto la intro en esta sesión (para que no moleste cada recarga), podríamos omitirlo.
+  // Pero lo mostraremos cada vez que la página carga, como pidió el usuario "al momento que uno abra el enlace".
+  
+  // Generar unas 30 cartas aleatorias
+  const numCards = 30;
+  for(let i=0; i<numCards; i++) {
+    const card = document.createElement('div');
+    card.className = 'intro-card';
+    const randomLetter = ALL[Math.floor(Math.random() * ALL.length)];
+    card.innerHTML = `<img src="${SIGN_IMAGES[randomLetter]}" alt="${randomLetter}">`;
+    
+    // Posición inicial aleatoria
+    card.style.left = Math.random() * 90 + 'vw';
+    
+    // Retardo aleatorio para que lluevan en diferentes momentos (0 a 1s)
+    const delay = Math.random() * 1;
+    
+    // Duración de la caída aleatoria (0.8s a 1.5s)
+    const duration = 0.8 + Math.random() * 0.7;
+    
+    card.style.animation = `fallDown ${duration}s ${delay}s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`;
+    
+    container.appendChild(card);
+  }
+  
+  // Aparece el logo
+  setTimeout(() => {
+    logo.style.transform = 'scale(1)';
+    logo.style.opacity = '1';
+  }, 500);
+  
+  // Después de que caen (aprox 2 segundos max)
+  setTimeout(() => {
+    // Recoger las cartas
+    const allCards = document.querySelectorAll('.intro-card');
+    allCards.forEach(card => {
+      card.style.animation = 'flyToCenter 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards';
+    });
+    
+    // Y hacer que el logo también vuele o se desvanezca
+    logo.style.transform = 'scale(0)';
+    logo.style.opacity = '0';
+    
+    // Luego desvanecer el overlay entero
+    setTimeout(() => {
+      introOv.style.opacity = '0';
+      introOv.style.visibility = 'hidden';
+      setTimeout(() => { introOv.style.display = 'none'; }, 800);
+    }, 600);
+    
+  }, 2200);
+}
+
+window.addEventListener('load', playIntroAnimation);
 
 /* ==============================
    PWA & SERVICE WORKER
