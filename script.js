@@ -1300,7 +1300,6 @@ function playAsGuest() {
 function logout() {
   firebase.auth().signOut().then(() => {
     closeMenu();
-    showScreenMenu('game');
-    document.getElementById('login-ov').classList.add('active');
+    backToModeSelect();
   });
 }
