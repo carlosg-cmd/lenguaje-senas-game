@@ -323,6 +323,20 @@ function renderLevelMap() {
   // Set theme class based on current difficulty
   container.className = 'level-nodes theme-' + diff;
   
+  const mapCard = document.querySelector('.level-map-container');
+  if (mapCard) {
+      if (diff === 'easy') {
+          mapCard.style.borderColor = '#22c55e';
+          mapCard.style.boxShadow = '0 20px 50px rgba(34,197,94,0.3)';
+      } else if (diff === 'medium') {
+          mapCard.style.borderColor = '#eab308';
+          mapCard.style.boxShadow = '0 20px 50px rgba(234,179,8,0.3)';
+      } else if (diff === 'hard') {
+          mapCard.style.borderColor = '#ef4444';
+          mapCard.style.boxShadow = '0 20px 50px rgba(239,68,68,0.3)';
+      }
+  }
+  
   // Keep connector line, clear nodes
   Array.from(container.children).forEach(c => {
     if(!c.style.position || c.style.position !== 'absolute') c.remove();
