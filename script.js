@@ -389,7 +389,7 @@ function resetGame(){
     updateStats();
     renderCards(false);
     startTimer();
-  } else {
+  } else if (gameMode === 'words') {
     document.getElementById('game-area').style.display = 'none';
     document.getElementById('word-area').style.display = 'flex';
     
