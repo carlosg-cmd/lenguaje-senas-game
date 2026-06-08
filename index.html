@@ -21,9 +21,7 @@
     <div style="position:relative;">
       <button class="menu-btn" id="menu-toggle" onclick="toggleMenu()">☰</button>
       <div class="dropdown-menu" id="dropdown-menu">
-        <div class="dropdown-label">Modo de Juego</div>
-        <button class="dropdown-item active" id="mode-classic" onclick="setGameMode('classic',this)">🧩 Clásico</button>
-        <button class="dropdown-item" id="mode-words" onclick="setGameMode('words',this)">📝 Palabras</button>
+        <button class="dropdown-item" id="nav-home-btn" onclick="backToModeSelect()" style="color: #ffd200;">🏠 Menú Principal</button>
         <div class="dropdown-sep"></div>
         <div class="dropdown-label">Dificultad</div>
         <button class="dropdown-item active" id="diff-easy" onclick="setDiffMenu('easy',this)">🟢 Fácil</button>
@@ -145,7 +143,12 @@
 <div class="overlay" id="level-map-ov">
   <div class="level-map-container" style="position: relative; max-width: 400px; width: 90%; background: #1a2744; border: 2px solid #f7971e; border-radius: 20px; padding: 40px 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;">
     <button class="btn-cancel" style="position:absolute; top: 15px; left: 15px; padding: 4px 10px; font-size: 12px; z-index: 10;" onclick="backToModeSelect()">🔙 Volver</button>
-    <h2 style="color: #ffd200; margin-bottom: 30px; font-size: 20px;">Mapa de Niveles</h2>
+    <h2 style="color: #ffd200; margin-bottom: 10px; font-size: 20px;">Mapa de Niveles</h2>
+    <div style="display:flex; justify-content:center; gap:8px; margin-bottom: 20px;">
+      <button class="btn-cancel" id="map-diff-easy" onclick="setDiffMenu('easy', this)" style="padding: 4px 10px; font-size: 11px;">Fácil</button>
+      <button class="btn-cancel" id="map-diff-medium" onclick="setDiffMenu('medium', this)" style="padding: 4px 10px; font-size: 11px;">Medio</button>
+      <button class="btn-cancel" id="map-diff-hard" onclick="setDiffMenu('hard', this)" style="padding: 4px 10px; font-size: 11px;">Difícil</button>
+    </div>
     <div class="level-nodes" id="level-nodes" style="display: flex; flex-direction: column; align-items: center; gap: 30px; position: relative;">
       <!-- Línea conectora (se dibujará con CSS/JS o simplemente un borde central) -->
       <div style="position: absolute; width: 4px; background: rgba(255,255,255,0.1); top: 20px; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 0; border-radius: 2px;"></div>
@@ -199,11 +202,13 @@
   <div class="rmodal">
     <div class="r-title" id="rtitle">¡Completado!</div>
     <div class="r-stars" id="rstars">⭐⭐⭐</div>
-    <div class="r-score" id="rscore">Puntuación: 0</div>
+    <div class="r-score" id="rscore">Score: 0</div>
     <div class="r-new-record" id="rnewrecord" style="display:none; color: #22c55e; font-weight: bold; margin-bottom: 8px; font-size: 14px; animation: pulse 1s infinite;">¡Nuevo Récord! 🏆</div>
     <div class="r-detail" id="rdetail"></div>
-    <div class="r-highscores" id="rhighscores" style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; margin-bottom: 14px; text-align: left; font-size: 11px; color: #a0b4cc;"></div>
-    <button class="btn-again" onclick="resetGame();document.getElementById('result-ov').classList.remove('active')">🔄 Jugar de nuevo</button>
+    <div id="result-buttons" style="display:flex; flex-direction:column; gap:8px;">
+      <!-- Botones se inyectan dinámicamente desde script.js -->
+      <button class="btn-again" onclick="resetGame();document.getElementById('result-ov').classList.remove('active')">🔄 Jugar de nuevo</button>
+    </div>
   </div>
 </div>
 

@@ -56,7 +56,14 @@ let currentLevel = 1;
 
 /* --- WORD MODE STATE --- */
 let gameMode = 'classic'; // 'classic' or 'words'
-const WORDS_DB = ['HOLA', 'CARRO', 'GATO', 'MUNDO', 'PERRO', 'AGUA', 'CASA', 'LUNA', 'SOL', 'FLOR'];
+
+const WORDS_DB = [
+  'HOLA', 'GRACIAS', 'PERMISO', 'FAVOR', 'AMIGO', 'FAMILIA', 
+  'AYUDA', 'TRABAJO', 'CASA', 'COMIDA', 'AGUA', 'BIEN', 'MAL',
+  'MAMA', 'PAPA', 'TIEMPO', 'HOY', 'SIEMPRE', 'NUNCA', 'AMOR',
+  'ESCUELA', 'DINERO', 'SALUD', 'DOLOR', 'MEDICO', 'HOSPITAL',
+  'BAÑO', 'DORMIR', 'COMER', 'BEBER', 'LEER', 'JUGAR', 'FELIZ'
+];
 let currentWord = '';
 let currentWordIndex = 0; // Index of the letter we are waiting for
 let wordsCompleted = 0;
@@ -113,6 +120,9 @@ function loadData() {
   const modeBtn = document.getElementById('mode-'+gameMode);
   if(modeBtn) modeBtn.classList.add('active');
   updateSoundIcon();
+  
+  // Set initial map diff buttons
+  setDiffMenu(diff, null);
   
   // Render Level Map
   renderLevelMap();
@@ -197,11 +207,20 @@ function setDiffMenu(d, btn){
     const el = document.getElementById(id);
     if(el) el.classList.remove('active');
   });
-  if(btn) btn.classList.add('active');
+  ['map-diff-easy','map-diff-medium','map-diff-hard'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) { el.style.background = 'rgba(255,255,255,0.07)'; el.style.color = '#a0b4cc'; el.style.borderColor = 'rgba(255,255,255,0.18)'; }
+  });
+  
+  if(btn && btn.id.startsWith('diff-')) btn.classList.add('active');
   else {
       const el = document.getElementById('diff-'+diff);
       if(el) el.classList.add('active');
   }
+  
+  const mapEl = document.getElementById('map-diff-'+diff);
+  if(mapEl) { mapEl.style.background = 'linear-gradient(90deg,#f7971e,#ffd200)'; mapEl.style.color = '#1a1a2e'; mapEl.style.borderColor = '#ffd200'; }
+  
   closeMenu();
   resetGame();
 }
@@ -421,6 +440,16 @@ function initNextWord() {
   });
 }
 
+function shuffleWordHand() {
+  const handEl = document.getElementById('word-hand');
+  if(!handEl) return;
+  const remainingCards = Array.from(handEl.children).filter(c => !c.classList.contains('solved') && !c.classList.contains('flying'));
+  if(remainingCards.length <= 1) return;
+  
+  const shuffled = shuffle([...remainingCards]);
+  shuffled.forEach(card => handEl.appendChild(card));
+}
+
 function tryWordMatch(card, char) {
   if (!active || card.classList.contains('solved') || card.classList.contains('flying')) return;
 
@@ -454,6 +483,7 @@ function tryWordMatch(card, char) {
       currentWordIndex++;
       if (currentWordIndex < currentWord.length) {
         document.getElementById(`slot-${currentWordIndex}`).classList.add('active');
+        shuffleWordHand();
       } else {
         // Completed Word
         wordsCompleted++;
@@ -480,6 +510,7 @@ function tryWordMatch(card, char) {
         setTimeout(() => {
             card.classList.remove('flying');
             card.style.transform = '';
+            shuffleWordHand();
         }, 300);
       }, 400); // wait for shake animation
     }
@@ -509,16 +540,19 @@ function updateTD(){
    STATS
 ============================== */
 function updateStats(){
+  const levelLetters = gameMode === 'classic' ? (LEVELS[currentLevel - 1] || ALL) : ALL;
+  const totalLetters = levelLetters.length;
+  
   document.getElementById('sd').textContent=score;
   document.getElementById('ed').textContent=errors;
-  document.getElementById('pd').textContent=matchedCount+'/'+ALL.length;
-  const pct=Math.round(matchedCount/ALL.length*100);
+  document.getElementById('pd').textContent=matchedCount+'/'+totalLetters;
+  const pct=Math.round(matchedCount/totalLetters*100);
   document.getElementById('pf').style.width=pct+'%';
   document.getElementById('prog-pct').textContent=pct+'%';
   document.getElementById('prog-text').textContent=
     matchedCount===0 ? 'Progreso' :
-    matchedCount===ALL.length ? '¡Abecedario completo! 🎉' :
-    'Faltan '+(ALL.length-matchedCount)+' letras';
+    matchedCount===totalLetters ? '¡Completado! 🎉' :
+    'Faltan '+(totalLetters-matchedCount)+' letras';
 }
 
 /* ==============================
@@ -828,7 +862,8 @@ function showResult(won){
   else if(soundOn) playSound(200, 'sawtooth', 0.5, 0.1, true);
 
   const stars=errors===0?'⭐⭐⭐':errors<=5?'⭐⭐':'⭐';
-  const timeTaken = DIFF_CONFIG[diff].timePerLetter*ALL.length - timeLeft;
+  const levelLetters = gameMode === 'classic' ? (LEVELS[currentLevel - 1] || ALL) : ALL;
+  const timeTaken = DIFF_CONFIG[diff].timePerLetter*levelLetters.length - timeLeft;
   const mins=Math.floor(timeTaken/60), secs=timeTaken%60;
   const timeStr = mins>0 ? mins+'m '+secs+'s' : secs+'s';
   
@@ -892,6 +927,23 @@ function showResult(won){
   if(localScores.length === 0) hsHtml += 'Sin registros aún.';
   const hsEl = document.getElementById('rhighscores');
   if(hsEl) hsEl.innerHTML = hsHtml;
+
+  let buttonsHtml = '';
+  if (gameMode === 'classic') {
+    if (won && currentLevel < LEVELS.length) {
+      buttonsHtml += `<button class="btn-again" style="background: linear-gradient(90deg,#22c55e,#16a34a);" onclick="startLevel(${currentLevel + 1}); document.getElementById('result-ov').classList.remove('active')">➡️ Siguiente Nivel</button>`;
+    }
+    if (won && currentLevel === LEVELS.length) {
+      buttonsHtml += `<button class="btn-again" onclick="backToModeSelect(); document.getElementById('result-ov').classList.remove('active')">🗺️ Volver al Mapa</button>`;
+    }
+    buttonsHtml += `<button class="btn-again" onclick="resetGame();document.getElementById('result-ov').classList.remove('active')">🔄 Repetir Nivel</button>`;
+  } else {
+    buttonsHtml += `<button class="btn-again" onclick="resetGame();document.getElementById('result-ov').classList.remove('active')">🔄 Jugar de nuevo</button>`;
+  }
+  buttonsHtml += `<button class="btn-again" style="background: transparent; border: 1.5px solid rgba(255,255,255,0.2); color:#a0b4cc; margin-top: 5px;" onclick="backToModeSelect(); document.getElementById('result-ov').classList.remove('active')">🏠 Menú Principal</button>`;
+  
+  const buttonsDiv = document.getElementById('result-buttons');
+  if(buttonsDiv) buttonsDiv.innerHTML = buttonsHtml;
 
   document.getElementById('result-ov').classList.add('active');
 }
