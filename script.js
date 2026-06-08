@@ -1243,56 +1243,25 @@ setDiffMenu(diff);
 
 function playIntroAnimation() {
   const introOv = document.getElementById('intro-ov');
-  const container = document.getElementById('intro-cards-container');
   const logo = document.getElementById('intro-logo');
   
-  if(!introOv || !container || !logo) return;
+  if(!introOv || !logo) return;
   
-  // Generar el mazo de cartas en el centro
-  const numCards = 35;
-  const cards = [];
-  for(let i=0; i<numCards; i++) {
-    const card = document.createElement('div');
-    card.className = 'intro-card';
-    const randomLetter = ALL[Math.floor(Math.random() * ALL.length)];
-    card.innerHTML = `<img src="${SIGN_IMAGES[randomLetter]}" alt="${randomLetter}">`;
-    
-    // Un poco de rotación aleatoria para que parezca un mazo desordenado
-    const initialRot = (Math.random() - 0.5) * 30;
-    card.style.transform = `rotate(${initialRot}deg)`;
-    
-    container.appendChild(card);
-    cards.push(card);
-  }
-  
-  // Después de 600ms, explotan
+  // Aparece el logo suavemente con latido
   setTimeout(() => {
-    cards.forEach((card, idx) => {
-      // Ángulo aleatorio
-      const angle = Math.random() * Math.PI * 2;
-      // Distancia más allá de los bordes de la pantalla
-      const distance = Math.max(window.innerWidth, window.innerHeight) * (0.8 + Math.random() * 0.5);
-      
-      const tx = Math.cos(angle) * distance;
-      const ty = Math.sin(angle) * distance;
-      const rot = (Math.random() - 0.5) * 720; // Giran mientras vuelan
-      
-      card.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg)`;
-      card.style.opacity = '0'; // Se desvanecen al final
-    });
-    
-    // Aparece el logo
     logo.style.transform = 'scale(1)';
     logo.style.opacity = '1';
     
-    // Luego desvanecer el overlay entero
-    setTimeout(() => {
-      introOv.style.opacity = '0';
-      introOv.style.visibility = 'hidden';
-      setTimeout(() => { introOv.style.display = 'none'; }, 800);
-    }, 1800);
-    
-  }, 600);
+    // Animación de pulso continuo (añadida vía clase)
+    logo.classList.add('pulse-logo');
+  }, 300);
+  
+  // Después de 2 segundos, desvanecer
+  setTimeout(() => {
+    introOv.style.opacity = '0';
+    introOv.style.visibility = 'hidden';
+    setTimeout(() => { introOv.style.display = 'none'; }, 800);
+  }, 2200);
 }
 
 // Llamar inmediatamente

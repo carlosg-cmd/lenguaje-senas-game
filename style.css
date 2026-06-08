@@ -422,29 +422,12 @@ body.danger-mode {
 /* ==============================
    INTRO ANIMATION
 ============================== */
-.intro-card {
-  position: absolute;
-  width: 50px;
-  height: 70px;
-  background: white;
-  border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-  font-size: 24px;
-  font-weight: bold;
-  color: #1a2744;
-  top: 50%;
-  left: 50%;
-  margin-top: -35px;
-  margin-left: -25px;
-  transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 1s ease-out;
-  transform: translate(0, 0) scale(1) rotate(0deg);
+.pulse-logo {
+  animation: pulseLogo 1.5s infinite ease-in-out;
 }
 
-.intro-card img {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
+@keyframes pulseLogo {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.8; }
+  100% { transform: scale(1); opacity: 1; }
 }
