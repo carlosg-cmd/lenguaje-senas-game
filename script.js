@@ -212,7 +212,15 @@ function setDiffMenu(d, btn){
   });
   
   const mapEl = document.getElementById('map-diff-'+diff);
-  if(mapEl) { mapEl.style.background = 'linear-gradient(90deg,#f7971e,#ffd200)'; mapEl.style.color = '#1a1a2e'; mapEl.style.borderColor = '#ffd200'; }
+  if(mapEl) { 
+    if (diff === 'easy') {
+      mapEl.style.background = 'rgba(34, 197, 94, 0.2)'; mapEl.style.color = '#22c55e'; mapEl.style.borderColor = 'rgba(34, 197, 94, 0.4)';
+    } else if (diff === 'medium') {
+      mapEl.style.background = 'rgba(234, 179, 8, 0.2)'; mapEl.style.color = '#eab308'; mapEl.style.borderColor = 'rgba(234, 179, 8, 0.4)';
+    } else if (diff === 'hard') {
+      mapEl.style.background = 'rgba(239, 68, 68, 0.2)'; mapEl.style.color = '#ef4444'; mapEl.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+    }
+  }
   
   closeMenu();
   resetGame();
