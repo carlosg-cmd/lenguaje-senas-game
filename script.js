@@ -203,20 +203,11 @@ document.addEventListener('click', e => {
 function setDiffMenu(d, btn){
   diff = d;
   saveData();
-  ['diff-easy','diff-medium','diff-hard'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) el.classList.remove('active');
-  });
+  
   ['map-diff-easy','map-diff-medium','map-diff-hard'].forEach(id => {
     const el = document.getElementById(id);
     if(el) { el.style.background = 'rgba(255,255,255,0.07)'; el.style.color = '#a0b4cc'; el.style.borderColor = 'rgba(255,255,255,0.18)'; }
   });
-  
-  if(btn && btn.id.startsWith('diff-')) btn.classList.add('active');
-  else {
-      const el = document.getElementById('diff-'+diff);
-      if(el) el.classList.add('active');
-  }
   
   const mapEl = document.getElementById('map-diff-'+diff);
   if(mapEl) { mapEl.style.background = 'linear-gradient(90deg,#f7971e,#ffd200)'; mapEl.style.color = '#1a1a2e'; mapEl.style.borderColor = '#ffd200'; }
