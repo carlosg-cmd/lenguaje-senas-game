@@ -44,6 +44,16 @@ let errors = 0, score = 0;
 let timerInt = null, timeLeft = 0;
 let active = false;
 
+/* --- LEVEL STATE --- */
+const LEVELS = [
+  ['A', 'B', 'C', 'D', 'E'],
+  ['F', 'G', 'H', 'I', 'J'],
+  ['K', 'L', 'M', 'N', 'Ñ'],
+  ['O', 'P', 'Q', 'R', 'S'],
+  ['T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+];
+let currentLevel = 1;
+
 /* --- WORD MODE STATE --- */
 let gameMode = 'classic'; // 'classic' or 'words'
 const WORDS_DB = ['HOLA', 'CARRO', 'GATO', 'MUNDO', 'PERRO', 'AGUA', 'CASA', 'LUNA', 'SOL', 'FLOR'];
@@ -55,6 +65,7 @@ let appData = {
   soundOn: true,
   lastDiff: 'easy',
   lastMode: 'classic',
+  maxLevel: 1,
   highscores: { easy: [], medium: [], hard: [] },
   highscoresWords: { easy: [], medium: [], hard: [] }, // New table for words mode
   letterStats: {}
@@ -73,6 +84,7 @@ function loadData() {
       }
       if(!parsed.highscoresWords) parsed.highscoresWords = { easy: [], medium: [], hard: [] };
       if(!parsed.lastMode) parsed.lastMode = 'classic';
+      if(!parsed.maxLevel) parsed.maxLevel = 1;
       appData = { ...appData, ...parsed };
       
       // Ensure all letters exist
@@ -101,6 +113,9 @@ function loadData() {
   const modeBtn = document.getElementById('mode-'+gameMode);
   if(modeBtn) modeBtn.classList.add('active');
   updateSoundIcon();
+  
+  // Render Level Map
+  renderLevelMap();
 }
 
 function saveData() {
@@ -251,6 +266,62 @@ function clearStats() {
 }
 
 /* ==============================
+   MODE & LEVEL SELECT
+============================== */
+function selectModeGateway(mode) {
+  document.getElementById('mode-select-ov').classList.remove('active');
+  if(mode === 'classic') {
+    renderLevelMap();
+    document.getElementById('level-map-ov').classList.add('active');
+  } else {
+    gameMode = 'words';
+    saveData();
+    resetGame();
+  }
+}
+
+function backToModeSelect() {
+  document.getElementById('level-map-ov').classList.remove('active');
+  document.getElementById('mode-select-ov').classList.add('active');
+}
+
+function renderLevelMap() {
+  const container = document.getElementById('level-nodes');
+  if(!container) return;
+  // Keep connector line, clear nodes
+  Array.from(container.children).forEach(c => {
+    if(!c.style.position || c.style.position !== 'absolute') c.remove();
+  });
+
+  const maxLvl = appData.maxLevel || 1;
+  LEVELS.forEach((lvlGroup, index) => {
+    const lvlNum = index + 1;
+    const isUnlocked = lvlNum <= maxLvl;
+    
+    const node = document.createElement('div');
+    node.className = 'lnode ' + (isUnlocked ? 'unlocked' : '');
+    
+    if(isUnlocked) {
+      node.textContent = lvlNum;
+      node.onclick = () => startLevel(lvlNum);
+    } else {
+      node.innerHTML = '🔒';
+      node.onclick = () => showToast('¡Desbloquea el Nivel ' + (lvlNum-1) + ' primero!');
+    }
+    container.appendChild(node);
+  });
+}
+
+function startLevel(lvlNum) {
+  currentLevel = lvlNum;
+  renderLevelMap();
+  document.getElementById('level-map-ov').classList.remove('active');
+  gameMode = 'classic';
+  saveData();
+  resetGame();
+}
+
+/* ==============================
    GAME INIT
 ============================== */
 function setGameMode(mode, el) {
@@ -280,11 +351,12 @@ function resetGame(){
     document.getElementById('game-area').style.display = 'flex';
     document.getElementById('word-area').style.display = 'none';
     
-    const total = ALL.length;
+    const levelLetters = LEVELS[currentLevel - 1] || ALL;
+    const total = levelLetters.length;
     const cfg = DIFF_CONFIG[diff];
     timeLeft = cfg.timePerLetter * total;
   
-    queue = shuffle([...ALL]);
+    queue = shuffle([...levelLetters]);
     visible = queue.splice(0, VISIBLE);
     lOrd = shuffle([...visible]);
     rOrd = shuffle([...visible]);
@@ -595,7 +667,8 @@ function tryMatch(){
     updateStats();
     checkMotivation(matchedCount);
 
-    if(matchedCount===ALL.length){
+    const levelLetters = LEVELS[currentLevel - 1] || ALL;
+    if(matchedCount===levelLetters.length){
       clearInterval(timerInt); active=false;
       setTimeout(()=>showResult(true),600);
       confetti(); return;
@@ -784,7 +857,15 @@ function showResult(won){
 
   let rTitle = '⏰ ¡Se acabó el tiempo!';
   if(won) {
-      rTitle = '¡Completado! 🎉';
+      if(gameMode === 'classic' && currentLevel < LEVELS.length) {
+          if (currentLevel >= appData.maxLevel) {
+              appData.maxLevel = currentLevel + 1;
+              saveData();
+          }
+          rTitle = '¡Nivel Completado! 🎉';
+      } else {
+          rTitle = '¡Completado! 🎉';
+      }
   }
   document.getElementById('rtitle').textContent = rTitle;
   document.getElementById('rstars').textContent=stars;
@@ -795,7 +876,8 @@ function showResult(won){
 
   let detailHtml = '';
   if (gameMode === 'classic') {
-    detailHtml = '✅ Letras completadas: <b>'+matchedCount+'/'+ALL.length+'</b><br>'+  
+    const levelLetters = LEVELS[currentLevel - 1] || ALL;
+    detailHtml = '✅ Letras completadas: <b>'+matchedCount+'/'+levelLetters.length+'</b><br>'+  
                  '❌ Errores: <b>'+errors+'</b><br>'+  
                  (won?'⏱ Tiempo: <b>'+timeStr+'</b>':'');
   } else {
@@ -894,7 +976,8 @@ function applyHint(lt){
     checkMotivation(matchedCount);
     updateStats();
     if(selL===lt) selL=null; if(selR===lt) selR=null;
-    if(matchedCount===ALL.length){ clearInterval(timerInt); active=false; setTimeout(()=>showResult(true),400); return; }
+    const levelLetters = LEVELS[currentLevel - 1] || ALL;
+    if(matchedCount===levelLetters.length){ clearInterval(timerInt); active=false; setTimeout(()=>showResult(true),400); return; }
     setTimeout(()=>replacePair(lt), 500);
   }, 1500);
 }
@@ -1029,7 +1112,7 @@ firebase.auth().onAuthStateChanged((user) => {
     const loginOv = document.getElementById('login-ov');
     if(loginOv && loginOv.classList.contains('active')) {
       loginOv.classList.remove('active');
-      document.getElementById('welcome-ov').classList.add('active');
+      document.getElementById('mode-select-ov').classList.add('active');
     }
   } else {
     currentUser = null;
@@ -1056,7 +1139,7 @@ function gatewayLogin() {
   firebase.auth().signInWithPopup(provider)
     .then((result) => {
       document.getElementById('login-ov').classList.remove('active');
-      document.getElementById('welcome-ov').classList.add('active');
+      document.getElementById('mode-select-ov').classList.add('active');
     }).catch((error) => {
       alert('Error al iniciar sesión: ' + error.message);
     });
@@ -1064,7 +1147,7 @@ function gatewayLogin() {
 
 function playAsGuest() {
   document.getElementById('login-ov').classList.remove('active');
-  document.getElementById('welcome-ov').classList.add('active');
+  document.getElementById('mode-select-ov').classList.add('active');
 }
 
 function logout() {

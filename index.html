@@ -122,21 +122,35 @@
   </div>
 </div>
 
-<!-- WELCOME OVERLAY -->
-<div class="overlay" id="welcome-ov">
-  <div class="wmodal">
-    <div class="w-emoji">✋</div>
-    <div class="w-title">¡Bienvenido/a!</div>
-    <p class="w-sub">Aprende el abecedario en lengua de señas jugando</p>
-    <div class="w-steps">
-      <div class="w-step"><span class="w-step-icon">🔤</span><span>A la <strong>izquierda</strong> verás letras del abecedario</span></div>
-      <div class="w-step"><span class="w-step-icon">🤚</span><span>A la <strong>derecha</strong> verás imágenes de señas</span></div>
-      <div class="w-step"><span class="w-step-icon">👆</span><span>Toca una <strong>letra</strong> y luego su <strong>seña</strong> para emparejarlas</span></div>
-      <div class="w-step"><span class="w-step-icon">🔀</span><span>Al acertar, las cartas restantes <strong>cambian de orden</strong></span></div>
-      <div class="w-step"><span class="w-step-icon">💡</span><span>Usa <strong>Pista</strong> si te atascas — cuesta 10 pts</span></div>
-      <div class="w-step"><span class="w-step-icon">☰</span><span>Cambia <strong>dificultad</strong> desde el menú arriba a la derecha</span></div>
+<!-- MODE SELECT OVERLAY -->
+<div class="overlay" id="mode-select-ov">
+  <div class="mode-select-container" style="max-width: 600px; width: 90%; background: var(--bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+    <h2 style="color: #fff; margin-bottom: 30px; font-size: 24px; text-align: center;">¿Qué quieres jugar hoy?</h2>
+    <div class="mode-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+      <div class="mcard" onclick="selectModeGateway('classic')">
+        <div class="mcard-icon" style="font-size: 40px; margin-bottom: 10px;">🧩</div>
+        <div class="mcard-title" style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">Modo Clásico</div>
+        <div class="mcard-desc" style="font-size: 13px; color: #94a3b8; line-height: 1.4;">Aprende el abecedario conectando letras con señas. ¡Avanza a través de 5 niveles!</div>
+      </div>
+      <div class="mcard" onclick="selectModeGateway('words')">
+        <div class="mcard-icon" style="font-size: 40px; margin-bottom: 10px;">📝</div>
+        <div class="mcard-title" style="font-weight: 600; font-size: 18px; margin-bottom: 8px;">Modo Palabras</div>
+        <div class="mcard-desc" style="font-size: 13px; color: #94a3b8; line-height: 1.4;">Pon a prueba tu memoria deletreando palabras con animaciones 3D.</div>
+      </div>
     </div>
-    <button class="btn-start" onclick="document.getElementById('welcome-ov').classList.remove('active')">¡Empezar a Jugar! 🚀</button>
+  </div>
+</div>
+
+<!-- LEVEL MAP OVERLAY -->
+<div class="overlay" id="level-map-ov">
+  <div class="level-map-container" style="position: relative; max-width: 400px; width: 90%; background: var(--bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 40px 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center;">
+    <button class="btn-cancel" style="position:absolute; top: 15px; left: 15px; padding: 4px 10px; font-size: 12px; z-index: 10;" onclick="backToModeSelect()">🔙 Volver</button>
+    <h2 style="color: #fff; margin-bottom: 30px; font-size: 20px;">Mapa de Niveles</h2>
+    <div class="level-nodes" id="level-nodes" style="display: flex; flex-direction: column; align-items: center; gap: 30px; position: relative;">
+      <!-- Línea conectora (se dibujará con CSS/JS o simplemente un borde central) -->
+      <div style="position: absolute; width: 4px; background: rgba(255,255,255,0.1); top: 20px; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 0; border-radius: 2px;"></div>
+      <!-- Nodes injected by JS -->
+    </div>
   </div>
 </div>
 
