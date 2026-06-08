@@ -41,7 +41,7 @@ let rOrd = [];
 let selL = null, selR = null;
 let matchedCount = 0;
 let errors = 0, score = 0;
-let timerInt = null, timeLeft = 0;
+let timerInt = null, timeLeft = 0, timeSurvived = 0;
 let active = false;
 let currentCombo = 0;
 let maxCombo = 0;
@@ -76,9 +76,16 @@ let appData = {
   lastMode: 'classic',
   maxLevel: 1,
   highscores: { easy: [], medium: [], hard: [] },
-  highscoresWords: { easy: [], medium: [], hard: [] }, // New table for words mode
-  highscoresSurvival: { easy: [], medium: [], hard: [] }, // New table for survival mode
-  letterStats: {}
+  highscoresWords: { easy: [], medium: [], hard: [] },
+  highscoresSurvival: { easy: [], medium: [], hard: [] },
+  letterStats: {},
+  stats: {
+    totalCorrect: 0,
+    totalWords: 0,
+    maxCombo: 0,
+    maxSurvivalTime: 0
+  },
+  achievements: []
 };
 ALL.forEach(l => appData.letterStats[l] = { correct: 0, wrong: 0, hints: 0 });
 
@@ -87,7 +94,6 @@ function loadData() {
   if (saved) {
     try {
       let parsed = JSON.parse(saved);
-      // Migrate back from category-nested data if they have it
       if(parsed.highscores && parsed.highscores.abecedario) {
         parsed.highscores = parsed.highscores.abecedario;
         parsed.letterStats = parsed.letterStats.abecedario || {};
@@ -96,6 +102,8 @@ function loadData() {
       if(!parsed.highscoresSurvival) parsed.highscoresSurvival = { easy: [], medium: [], hard: [] };
       if(!parsed.lastMode) parsed.lastMode = 'classic';
       if(!parsed.maxLevel) parsed.maxLevel = 1;
+      if(!parsed.stats) parsed.stats = { totalCorrect: 0, totalWords: 0, maxCombo: 0, maxSurvivalTime: 0 };
+      if(!parsed.achievements) parsed.achievements = [];
       appData = { ...appData, ...parsed };
       
       // Ensure all letters exist
@@ -391,7 +399,7 @@ function setGameMode(mode, el) {
 function resetGame(){
   clearInterval(timerInt);
   document.getElementById('result-ov').classList.remove('active');
-  matchedCount=0; errors=0; score=0; active=true; currentCombo=0;
+  matchedCount=0; errors=0; score=0; active=true; currentCombo=0; timeSurvived=0;
 
   const hsEl = document.getElementById('hs');
   if(hsEl) {
@@ -419,13 +427,25 @@ function resetGame(){
     updateStats();
     renderCards(false);
     startTimer();
-  } else if (gameMode === 'words') {
+  } else if (gameMode === 'words' || gameMode === 'daily') {
     document.getElementById('game-area').style.display = 'none';
     document.getElementById('word-area').style.display = 'flex';
     
     wordsCompleted = 0;
-    const cfg = DIFF_CONFIG[diff];
-    timeLeft = cfg.timePerLetter * 25; // Base time for ~5 words
+    
+    if (gameMode === 'daily') {
+        const todayStr = new Date().toDateString();
+        if (appData.lastDailyDate === todayStr) {
+            alert('¡Ya completaste el Reto Diario de hoy! Vuelve mañana para un nuevo desafío.');
+            backToModeSelect();
+            return;
+        }
+        dailyWordsList = getDailyWords();
+        timeLeft = 120; // 2 minutos fijos para el reto diario
+    } else {
+        const cfg = DIFF_CONFIG[diff];
+        timeLeft = cfg.timePerLetter * 25; // Base time for ~5 words
+    }
     
     initNextWord();
     updateStats();
@@ -462,9 +482,48 @@ function showFloatingText(text, color, x, y) {
 /* ==============================
    WORD MODE LOGIC
 ============================== */
+let dailyWordsList = [];
+
+function seededRandom(seed) {
+    let x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+}
+
+function getDailyWords() {
+    const today = new Date();
+    const seedStr = today.getFullYear() + "-" + (today.getMonth() + 1) + "-" + today.getDate();
+    let seed = 0;
+    for (let i = 0; i < seedStr.length; i++) {
+        seed = ((seed << 5) - seed) + seedStr.charCodeAt(i);
+        seed |= 0;
+    }
+    let pool = [...WORDS_DB];
+    let dailyWords = [];
+    for(let i = 0; i < 5; i++) {
+        let idx = Math.floor(seededRandom(seed++) * pool.length);
+        if (idx < 0) idx = -idx;
+        dailyWords.push(pool[idx]);
+        pool.splice(idx, 1);
+    }
+    return dailyWords;
+}
+
 function initNextWord() {
   if (WORDS_DB.length === 0) return;
-  currentWord = WORDS_DB[Math.floor(Math.random() * WORDS_DB.length)];
+  
+  if (gameMode === 'daily') {
+      if (wordsCompleted >= dailyWordsList.length) {
+          appData.lastDailyDate = new Date().toDateString();
+          saveData();
+          clearInterval(timerInt); active=false;
+          setTimeout(()=>showResult(true),600);
+          confetti(); return;
+      }
+      currentWord = dailyWordsList[wordsCompleted];
+  } else {
+      currentWord = WORDS_DB[Math.floor(Math.random() * WORDS_DB.length)];
+  }
+  
   currentWordIndex = 0;
   
   const targetEl = document.getElementById('word-target');
@@ -547,6 +606,7 @@ function tryWordMatch(card, char) {
       } else {
         // Completed Word
         wordsCompleted++;
+        appData.stats.totalWords++;
         if(soundOn) playSound(600, 'triangle', 0.2);
         
         // Spawn Confetti
@@ -584,6 +644,10 @@ function startTimer(){
   clearInterval(timerInt); updateTD();
   timerInt=setInterval(()=>{
     timeLeft--;
+    timeSurvived++;
+    if(timeSurvived > appData.stats.maxSurvivalTime && gameMode === 'survival') {
+        appData.stats.maxSurvivalTime = timeSurvived;
+    }
     updateTD();
     if(timeLeft<=0){ clearInterval(timerInt); active=false; showResult(false); }
   },1000);
@@ -764,9 +828,11 @@ function tryMatch(){
     matchedCount++;
     selL=null; selR=null;
     appData.letterStats[matchedLetter].correct++;
+    appData.stats.totalCorrect++;
     
     currentCombo++;
     if(currentCombo > maxCombo) maxCombo = currentCombo;
+    if(currentCombo > appData.stats.maxCombo) appData.stats.maxCombo = currentCombo;
     
     let multiplier = 1;
     if (currentCombo >= 10) multiplier = 4;
@@ -985,7 +1051,9 @@ function showResult(won){
   
   let isNewRecord = false;
   if(won || score > 0) {
-    const scoresArrayKey = gameMode === 'classic' ? 'highscores' : (gameMode === 'words' ? 'highscoresWords' : 'highscoresSurvival');
+    const scoresArrayKey = gameMode === 'classic' ? 'highscores' : 
+                           gameMode === 'words' ? 'highscoresWords' : 
+                           gameMode === 'daily' ? 'highscoresDaily' : 'highscoresSurvival';
     if (!appData[scoresArrayKey]) appData[scoresArrayKey] = { easy: [], medium: [], hard: [] };
     const scores = appData[scoresArrayKey][diff];
     scores.push(score);
@@ -1024,6 +1092,8 @@ function showResult(won){
   
   const nrEl = document.getElementById('rnewrecord');
   if(nrEl) nrEl.style.display = isNewRecord ? 'block' : 'none';
+
+  checkAchievements();
 
   let detailHtml = '';
   if (gameMode === 'classic') {
@@ -1335,4 +1405,68 @@ function logout() {
     closeMenu();
     backToModeSelect();
   });
+}
+
+/* ==============================
+   PROFILE AND ACHIEVEMENTS
+============================== */
+const ACHIEVEMENTS_DEF = [
+  { id: 'first_steps', title: 'Primeros Pasos', desc: 'Acertar 50 señas', check: (s) => s.totalCorrect >= 50, icon: '🥉' },
+  { id: 'apprentice', title: 'Aprendiz', desc: 'Acertar 200 señas', check: (s) => s.totalCorrect >= 200, icon: '🥈' },
+  { id: 'master', title: 'Maestro', desc: 'Acertar 500 señas', check: (s) => s.totalCorrect >= 500, icon: '🥇' },
+  { id: 'words_1', title: 'Letrado', desc: 'Armar 10 palabras', check: (s) => s.totalWords >= 10, icon: '📝' },
+  { id: 'words_2', title: 'Diccionario', desc: 'Armar 50 palabras', check: (s) => s.totalWords >= 50, icon: '📚' },
+  { id: 'streak_1', title: 'En Llamas', desc: 'Alcanzar combo x5', check: (s) => s.maxCombo >= 5, icon: '🔥' },
+  { id: 'streak_2', title: 'Intocable', desc: 'Alcanzar combo x15', check: (s) => s.maxCombo >= 15, icon: '⚡' },
+  { id: 'survival_1', title: 'Sobreviviente', desc: 'Sobrevivir 60s', check: (s) => s.maxSurvivalTime >= 60, icon: '⏳' },
+  { id: 'survival_2', title: 'Inmortal', desc: 'Sobrevivir 180s', check: (s) => s.maxSurvivalTime >= 180, icon: '💎' },
+];
+
+function checkAchievements() {
+  let unlocked = false;
+  if (!appData.achievements) appData.achievements = [];
+  
+  ACHIEVEMENTS_DEF.forEach(ach => {
+    if (!appData.achievements.includes(ach.id)) {
+      if (ach.check(appData.stats)) {
+        appData.achievements.push(ach.id);
+        unlocked = true;
+        showFloatingText('🏆 ¡Logro Desbloqueado: ' + ach.title + '!', '#a855f7', window.innerWidth/2 - 120, 100);
+      }
+    }
+  });
+  if (unlocked) saveData();
+}
+
+function showProfile() {
+  document.getElementById('mode-select-ov').classList.remove('active');
+  document.getElementById('profile-ov').classList.add('active');
+  
+  if (!appData.stats) appData.stats = { totalCorrect: 0, totalWords: 0, maxCombo: 0, maxSurvivalTime: 0 };
+  
+  document.getElementById('prof-corrects').textContent = appData.stats.totalCorrect;
+  document.getElementById('prof-words').textContent = appData.stats.totalWords;
+  document.getElementById('prof-combo').textContent = 'x' + appData.stats.maxCombo;
+  document.getElementById('prof-survival').textContent = appData.stats.maxSurvivalTime + 's';
+  
+  const achList = document.getElementById('achievements-list');
+  achList.innerHTML = '';
+  
+  if (!appData.achievements || appData.achievements.length === 0) {
+    achList.innerHTML = '<div style="font-size: 11px; color: #a0b4cc; text-align: center; width: 100%;">Aún no has desbloqueado medallas. ¡Sigue jugando!</div>';
+  } else {
+    ACHIEVEMENTS_DEF.forEach(ach => {
+      if (appData.achievements.includes(ach.id)) {
+        const d = document.createElement('div');
+        d.style = 'background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 10px; width: 90px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;';
+        d.innerHTML = `<div style="font-size: 24px; margin-bottom: 5px;">${ach.icon}</div><div style="font-size: 10px; font-weight: bold; color: #ffd200;">${ach.title}</div><div style="font-size: 8px; color: #a0b4cc;">${ach.desc}</div>`;
+        achList.appendChild(d);
+      }
+    });
+  }
+}
+
+function closeProfile() {
+  document.getElementById('profile-ov').classList.remove('active');
+  document.getElementById('mode-select-ov').classList.add('active');
 }
