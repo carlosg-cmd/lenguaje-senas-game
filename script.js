@@ -388,7 +388,7 @@ function tryWordMatch(card, char) {
         if(soundOn) playSound(600, 'triangle', 0.2);
         
         // Spawn Confetti
-        for(let i=0; i<30; i++) spawnConfetti();
+        confetti();
         
         setTimeout(() => {
             initNextWord();
