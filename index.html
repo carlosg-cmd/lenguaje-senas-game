@@ -21,7 +21,10 @@
     <div style="position:relative;">
       <button class="menu-btn" id="menu-toggle" onclick="toggleMenu()">☰</button>
       <div class="dropdown-menu" id="dropdown-menu">
-
+        <div class="dropdown-label">Modo de Juego</div>
+        <button class="dropdown-item active" id="mode-classic" onclick="setGameMode('classic',this)">🧩 Clásico</button>
+        <button class="dropdown-item" id="mode-words" onclick="setGameMode('words',this)">📝 Palabras</button>
+        <div class="dropdown-sep"></div>
         <div class="dropdown-label">Dificultad</div>
         <button class="dropdown-item active" id="diff-easy" onclick="setDiffMenu('easy',this)">🟢 Fácil</button>
         <button class="dropdown-item" id="diff-medium" onclick="setDiffMenu('medium',this)">🟡 Medio</button>
@@ -73,6 +76,17 @@
       <div class="column" id="rcol"></div>
     </div>
   </div>
+
+  <!-- WORD MODE AREA -->
+  <div class="word-area" id="word-area" style="display:none;">
+    <div class="word-target" id="word-target">
+      <!-- Word and empty slots will go here -->
+    </div>
+    <div class="word-hand" id="word-hand">
+      <!-- Sign cards will go here -->
+    </div>
+  </div>
+
   <div class="footer">
     Desarrollado por <strong style="color:rgba(255,255,255,0.45);">Carlos Andrés Jiménez - David andrés Mora - Elias Rojas </strong> — Tecnólogo en Desarrollo de Software &nbsp;|&nbsp; Ficha 3066035 - Tranversal de Comunicacion - 2026
   </div>

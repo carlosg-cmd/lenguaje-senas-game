@@ -44,10 +44,19 @@ let errors = 0, score = 0;
 let timerInt = null, timeLeft = 0;
 let active = false;
 
+/* --- WORD MODE STATE --- */
+let gameMode = 'classic'; // 'classic' or 'words'
+const WORDS_DB = ['HOLA', 'CARRO', 'GATO', 'MUNDO', 'PERRO', 'AGUA', 'CASA', 'LUNA', 'SOL', 'FLOR'];
+let currentWord = '';
+let currentWordIndex = 0; // Index of the letter we are waiting for
+let wordsCompleted = 0;
+
 let appData = {
   soundOn: true,
   lastDiff: 'easy',
+  lastMode: 'classic',
   highscores: { easy: [], medium: [], hard: [] },
+  highscoresWords: { easy: [], medium: [], hard: [] }, // New table for words mode
   letterStats: {}
 };
 ALL.forEach(l => appData.letterStats[l] = { correct: 0, wrong: 0, hints: 0 });
@@ -62,6 +71,8 @@ function loadData() {
         parsed.highscores = parsed.highscores.abecedario;
         parsed.letterStats = parsed.letterStats.abecedario || {};
       }
+      if(!parsed.highscoresWords) parsed.highscoresWords = { easy: [], medium: [], hard: [] };
+      if(!parsed.lastMode) parsed.lastMode = 'classic';
       appData = { ...appData, ...parsed };
       
       // Ensure all letters exist
@@ -72,12 +83,30 @@ function loadData() {
   }
   soundOn = appData.soundOn;
   diff = appData.lastDiff || 'easy';
+  gameMode = appData.lastMode || 'classic';
+  
+  // Set UI Active buttons for Diff
+  ['diff-easy','diff-medium','diff-hard'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('active');
+  });
+  const diffBtn = document.getElementById('diff-'+diff);
+  if(diffBtn) diffBtn.classList.add('active');
+
+  // Set UI Active buttons for Mode
+  ['mode-classic','mode-words'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.classList.remove('active');
+  });
+  const modeBtn = document.getElementById('mode-'+gameMode);
+  if(modeBtn) modeBtn.classList.add('active');
   updateSoundIcon();
 }
 
 function saveData() {
   appData.soundOn = soundOn;
   appData.lastDiff = diff;
+  appData.lastMode = gameMode;
   localStorage.setItem('senasGameData', JSON.stringify(appData));
 }
 
@@ -224,25 +253,165 @@ function clearStats() {
 /* ==============================
    GAME INIT
 ============================== */
+function setGameMode(mode, el) {
+  ['mode-classic','mode-words'].forEach(id => {
+      const elbtn = document.getElementById(id);
+      if(elbtn) elbtn.classList.remove('active');
+  });
+  if(el) el.classList.add('active');
+  gameMode = mode;
+  saveData();
+  closeMenu();
+  resetGame();
+}
+
 function resetGame(){
   clearInterval(timerInt);
-  const total = ALL.length;
-  const cfg = DIFF_CONFIG[diff];
-  timeLeft = cfg.timePerLetter * total;
-
-  queue = shuffle([...ALL]);
-  visible = queue.splice(0, VISIBLE);
-  lOrd = shuffle([...visible]);
-  rOrd = shuffle([...visible]);
-
-  matchedCount=0; errors=0; score=0; selL=null; selR=null; active=true;
   document.getElementById('result-ov').classList.remove('active');
+  matchedCount=0; errors=0; score=0; active=true;
+
   const hsEl = document.getElementById('hs');
-  if(hsEl) hsEl.textContent = (appData.highscores[diff][0] || 0);
-  clearLines();
-  updateStats();
-  renderCards(false);
-  startTimer();
+  if(hsEl) {
+      if(gameMode === 'classic') hsEl.textContent = (appData.highscores[diff][0] || 0);
+      else hsEl.textContent = (appData.highscoresWords[diff][0] || 0);
+  }
+
+  if (gameMode === 'classic') {
+    document.getElementById('game-area').style.display = 'flex';
+    document.getElementById('word-area').style.display = 'none';
+    
+    const total = ALL.length;
+    const cfg = DIFF_CONFIG[diff];
+    timeLeft = cfg.timePerLetter * total;
+  
+    queue = shuffle([...ALL]);
+    visible = queue.splice(0, VISIBLE);
+    lOrd = shuffle([...visible]);
+    rOrd = shuffle([...visible]);
+  
+    selL=null; selR=null;
+    clearLines();
+    updateStats();
+    renderCards(false);
+    startTimer();
+  } else {
+    document.getElementById('game-area').style.display = 'none';
+    document.getElementById('word-area').style.display = 'flex';
+    
+    wordsCompleted = 0;
+    const cfg = DIFF_CONFIG[diff];
+    timeLeft = cfg.timePerLetter * 25; // Base time for ~5 words
+    
+    initNextWord();
+    updateStats();
+    startTimer();
+  }
+}
+
+/* ==============================
+   WORD MODE LOGIC
+============================== */
+function initNextWord() {
+  if (WORDS_DB.length === 0) return;
+  currentWord = WORDS_DB[Math.floor(Math.random() * WORDS_DB.length)];
+  currentWordIndex = 0;
+  
+  const targetEl = document.getElementById('word-target');
+  targetEl.innerHTML = `
+    <div class="word-display">${currentWord}</div>
+    <div class="word-slots" id="word-slots">
+      ${currentWord.split('').map((char, i) => `<div class="word-slot" id="slot-${i}"></div>`).join('')}
+    </div>
+  `;
+  document.getElementById('slot-0').classList.add('active');
+
+  let lettersNeeded = currentWord.split('');
+  let options = [...lettersNeeded];
+  while (options.length < 12) {
+    let randomLetter = ALL[Math.floor(Math.random() * ALL.length)];
+    if (!options.includes(randomLetter)) {
+      options.push(randomLetter);
+    }
+  }
+  options = shuffle(options);
+
+  const handEl = document.getElementById('word-hand');
+  handEl.innerHTML = '';
+  options.forEach((char, idx) => {
+    const card = document.createElement('div');
+    card.className = 'word-card';
+    card.id = `wcard-${idx}`;
+    card.dataset.letter = char;
+    card.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s, background 0.2s';
+    card.innerHTML = `<img src="${SIGN_IMAGES[char]}" alt="seña">`;
+    card.onclick = () => tryWordMatch(card, char);
+    handEl.appendChild(card);
+  });
+}
+
+function tryWordMatch(card, char) {
+  if (!active || card.classList.contains('solved') || card.classList.contains('flying')) return;
+
+  const expectedChar = currentWord[currentWordIndex];
+  const targetSlot = document.getElementById(`slot-${currentWordIndex}`);
+  
+  // Calculate FLIP target coordinates
+  const cardRect = card.getBoundingClientRect();
+  const slotRect = targetSlot.getBoundingClientRect();
+  const deltaX = slotRect.left - cardRect.left + (slotRect.width - cardRect.width) / 2;
+  const deltaY = slotRect.top - cardRect.top + (slotRect.height - cardRect.height) / 2;
+
+  // Fly!
+  card.classList.add('flying');
+  card.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+  if(soundOn) playSound(800, 'sine', 0.05);
+
+  setTimeout(() => {
+    if (char === expectedChar) {
+      // Correct!
+      card.classList.remove('flying');
+      card.classList.add('solved');
+      card.style.transform = ''; // reset translate to attach physically
+      targetSlot.appendChild(card);
+      targetSlot.classList.remove('active');
+      
+      score += 20;
+      updateStats();
+      playMatch();
+      
+      currentWordIndex++;
+      if (currentWordIndex < currentWord.length) {
+        document.getElementById(`slot-${currentWordIndex}`).classList.add('active');
+      } else {
+        // Completed Word
+        wordsCompleted++;
+        if(soundOn) playSound(600, 'triangle', 0.2);
+        
+        // Spawn Confetti
+        for(let i=0; i<30; i++) spawnConfetti();
+        
+        setTimeout(() => {
+            initNextWord();
+        }, 1500);
+      }
+    } else {
+      // Wrong!
+      card.classList.add('reject');
+      playWrong();
+      score = Math.max(0, score - 5);
+      errors++;
+      updateStats();
+      
+      setTimeout(() => {
+        card.classList.remove('reject');
+        card.style.transform = 'translate(0, 0)'; // Fly back
+        setTimeout(() => {
+            card.classList.remove('flying');
+            card.style.transform = '';
+        }, 300);
+      }, 400); // wait for shake animation
+    }
+  }, 300); // 300ms flight time
 }
 
 /* ==============================
@@ -592,18 +761,21 @@ function showResult(won){
   
   let isNewRecord = false;
   if(won || score > 0) {
-    const scores = appData.highscores[diff];
+    const scores = gameMode === 'classic' ? appData.highscores[diff] : appData.highscoresWords[diff];
     scores.push(score);
     scores.sort((a,b) => b-a);
     if(scores.length > 3) scores.pop();
     if(scores[0] === score && score > 0) isNewRecord = true;
-    appData.highscores[diff] = scores;
+    
+    if (gameMode === 'classic') appData.highscores[diff] = scores;
+    else appData.highscoresWords[diff] = scores;
+    
     saveData();
     
     // PUSH SCORE TO FIREBASE
     setTimeout(() => {
         if(currentUser) {
-            saveGlobalScore(currentUser.displayName, score, diff, currentUser.photoURL, currentUser.uid);
+            saveGlobalScore(currentUser.displayName, score, diff, currentUser.photoURL, currentUser.uid, gameMode);
         } else {
             alert(`¡Conseguiste ${score} puntos! Tu récord se guardó localmente. Inicia sesión desde el menú para competir en el Top 10 Global.`);
         }
@@ -621,14 +793,21 @@ function showResult(won){
   const nrEl = document.getElementById('rnewrecord');
   if(nrEl) nrEl.style.display = isNewRecord ? 'block' : 'none';
 
-  document.getElementById('rdetail').innerHTML=
-    '✅ Letras completadas: <b>'+matchedCount+'/'+ALL.length+'</b><br>'+  
-    '❌ Errores: <b>'+errors+'</b><br>'+  
-    (won?'⏱ Tiempo: <b>'+timeStr+'</b>':'');
+  let detailHtml = '';
+  if (gameMode === 'classic') {
+    detailHtml = '✅ Letras completadas: <b>'+matchedCount+'/'+ALL.length+'</b><br>'+  
+                 '❌ Errores: <b>'+errors+'</b><br>'+  
+                 (won?'⏱ Tiempo: <b>'+timeStr+'</b>':'');
+  } else {
+    detailHtml = '📝 Palabras armadas: <b>'+wordsCompleted+'</b><br>'+  
+                 '❌ Errores: <b>'+errors+'</b>';
+  }
+  document.getElementById('rdetail').innerHTML = detailHtml;
 
   let hsHtml = '<b>Mejores Puntuaciones (' + (diff==='easy'?'Fácil':diff==='medium'?'Medio':'Difícil') + '):</b><br>';
-  appData.highscores[diff].forEach((s, i) => { hsHtml += `${i+1}. ${s} pts<br>`; });
-  if(appData.highscores[diff].length === 0) hsHtml += 'Sin registros aún.';
+  const localScores = gameMode === 'classic' ? appData.highscores[diff] : appData.highscoresWords[diff];
+  localScores.forEach((s, i) => { hsHtml += `${i+1}. ${s} pts<br>`; });
+  if(localScores.length === 0) hsHtml += 'Sin registros aún.';
   const hsEl = document.getElementById('rhighscores');
   if(hsEl) hsEl.innerHTML = hsHtml;
 
@@ -767,12 +946,13 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-async function saveGlobalScore(nickname, score, difficulty, photoURL, uid) {
+async function saveGlobalScore(nickname, score, difficulty, photoURL, uid, mode) {
   try {
     await db.collection("highscores").add({
       nickname: nickname,
       score: score,
       difficulty: difficulty,
+      mode: mode || 'classic',
       photoURL: photoURL,
       uid: uid,
       date: firebase.firestore.FieldValue.serverTimestamp()
@@ -793,6 +973,7 @@ async function fetchGlobalScores(d) {
   try {
     const q = db.collection("highscores")
       .where("difficulty", "==", d)
+      .where("mode", "==", gameMode)
       .orderBy("score", "desc")
       .limit(10);
       
@@ -814,13 +995,14 @@ async function fetchGlobalScores(d) {
     });
     if (html === "") html = `<div style='text-align:center; color:#94a3b8; padding: 20px 0;'>Aún no hay récords.<br>¡Juega y sé el primero! 🚀</div>`;
     lbList.innerHTML = html;
-    lbTitle.textContent = `🏆 Top 10 Global (${d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil'})`;
+    const modeName = gameMode === 'classic' ? 'Clásico' : 'Palabras';
+    lbTitle.textContent = `🏆 Top 10 ${modeName} (${d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil'})`;
   } catch(e) {
     console.error(e);
     let msg = "Error al cargar récords.";
     if (e.message && e.message.includes("indexes")) {
         msg = "Falta crear el índice en Firebase. Revisa la consola.";
-        console.warn("Ve a Firebase Console -> Firestore -> Indexes y crea un índice compuesto para: collection 'highscores', fields 'category' (Ascending), 'difficulty' (Ascending) y 'score' (Descending).");
+        console.warn("Ve a Firebase Console -> Firestore -> Indexes y crea un índice compuesto para: collection 'highscores', fields 'difficulty' (Ascending), 'mode' (Ascending) y 'score' (Descending).");
     }
     lbTitle.textContent = msg;
     lbList.innerHTML = "<div style='text-align:center; color:#ef4444; font-size: 12px;'>" + e.message + "</div>";
