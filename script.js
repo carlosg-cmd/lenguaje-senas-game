@@ -234,6 +234,10 @@ function showScreenMenu(id){
   });
   const activeBtn = document.getElementById('nav-'+id+'-btn');
   if(activeBtn) activeBtn.classList.add('active');
+  
+  // Ocultar cualquier overlay si el usuario navega
+  document.querySelectorAll('.overlay').forEach(ov => ov.classList.remove('active'));
+  
   closeMenu();
   if(id==='repaso') buildRepaso();
   if(id==='leaderboard') fetchGlobalScores(diff);
@@ -289,6 +293,7 @@ function clearStats() {
 ============================== */
 function selectModeGateway(mode) {
   document.getElementById('mode-select-ov').classList.remove('active');
+  showScreenMenu('game');
   if(mode === 'classic') {
     renderLevelMap();
     document.getElementById('level-map-ov').classList.add('active');
@@ -302,6 +307,7 @@ function selectModeGateway(mode) {
 function backToModeSelect() {
   document.getElementById('level-map-ov').classList.remove('active');
   document.getElementById('mode-select-ov').classList.add('active');
+  showScreenMenu('game');
 }
 
 function renderLevelMap() {
@@ -335,6 +341,7 @@ function startLevel(lvlNum) {
   currentLevel = lvlNum;
   renderLevelMap();
   document.getElementById('level-map-ov').classList.remove('active');
+  showScreenMenu('game');
   gameMode = 'classic';
   saveData();
   resetGame();
