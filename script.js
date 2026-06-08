@@ -1301,7 +1301,13 @@ function playIntroAnimation() {
   }, 2200);
 }
 
-window.addEventListener('load', playIntroAnimation);
+// Llamar inmediatamente
+playIntroAnimation();
+// Fallback de seguridad por si algo falla
+setTimeout(() => { 
+  const introOv = document.getElementById('intro-ov');
+  if(introOv) introOv.style.display = 'none'; 
+}, 3500);
 
 /* ==============================
    PWA & SERVICE WORKER
