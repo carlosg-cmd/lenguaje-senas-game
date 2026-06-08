@@ -595,7 +595,11 @@ function tryWordMatch(card, char) {
       targetSlot.appendChild(card);
       targetSlot.classList.remove('active');
       
-      score += 20;
+      let pointsGained = 20;
+      if (appData.achievements && appData.achievements.includes('ambassador')) {
+        pointsGained = Math.floor(pointsGained * 1.15);
+      }
+      score += pointsGained;
       updateStats();
       playMatch();
       
@@ -839,7 +843,10 @@ function tryMatch(){
     else if (currentCombo >= 5) multiplier = 3;
     else if (currentCombo >= 3) multiplier = 2;
     
-    const pointsGained = 20 * multiplier;
+    let pointsGained = 20 * multiplier;
+    if (appData.achievements && appData.achievements.includes('ambassador')) {
+      pointsGained = Math.floor(pointsGained * 1.15);
+    }
     
     if (currentCombo >= 3) {
       const rect = lc.getBoundingClientRect();
@@ -1119,6 +1126,10 @@ function showResult(won){
   if(hsEl) hsEl.innerHTML = hsHtml;
 
   let buttonsHtml = '';
+  
+  // Share Button always present
+  buttonsHtml += `<button class="btn-again" style="background: linear-gradient(90deg, #a855f7, #c084fc); margin-bottom: 5px; animation: pulse 2s infinite;" onclick="shareScore()">📢 Desafiar Amigos</button>`;
+
   if (gameMode === 'classic') {
     if (won && currentLevel < LEVELS.length) {
       buttonsHtml += `<button class="btn-again" style="background: linear-gradient(90deg,#22c55e,#16a34a);" onclick="startLevel(${currentLevel + 1}); document.getElementById('result-ov').classList.remove('active')">➡️ Siguiente Nivel</button>`;
@@ -1420,6 +1431,7 @@ const ACHIEVEMENTS_DEF = [
   { id: 'streak_2', title: 'Intocable', desc: 'Alcanzar combo x15', check: (s) => s.maxCombo >= 15, icon: '⚡' },
   { id: 'survival_1', title: 'Sobreviviente', desc: 'Sobrevivir 60s', check: (s) => s.maxSurvivalTime >= 60, icon: '⏳' },
   { id: 'survival_2', title: 'Inmortal', desc: 'Sobrevivir 180s', check: (s) => s.maxSurvivalTime >= 180, icon: '💎' },
+  { id: 'ambassador', title: 'Embajador VIP', desc: 'Compartiste el juego', check: (s) => false, icon: '👑' },
 ];
 
 function checkAchievements() {
@@ -1469,4 +1481,51 @@ function showProfile() {
 function closeProfile() {
   document.getElementById('profile-ov').classList.remove('active');
   document.getElementById('mode-select-ov').classList.add('active');
+}
+
+/* ==============================
+   SOCIAL & EXIT LOGIC
+============================== */
+function exitApp() {
+  try {
+    window.close();
+  } catch(e) {}
+  
+  // Si no se cerró, mostrar la pantalla de despedida
+  document.querySelectorAll('.overlay').forEach(ov => ov.classList.remove('active'));
+  document.getElementById('exit-ov').classList.add('active');
+}
+
+function shareScore() {
+  const shareText = `¡Acabo de anotar ${score} puntos en el modo ${gameMode === 'survival' ? 'Supervivencia' : gameMode === 'words' ? 'Palabras' : 'Clásico'} de Señas & Letras! 👑\n\n¿Crees que puedes superar mi récord? Juega gratis aquí:`;
+  const shareUrl = 'https://carlosg-cmd.github.io/lenguaje-senas-game/';
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'Señas & Letras',
+      text: shareText,
+      url: shareUrl
+    }).then(() => {
+      // Recompensa al compartir con éxito
+      if (!appData.achievements) appData.achievements = [];
+      if (!appData.achievements.includes('ambassador')) {
+        appData.achievements.push('ambassador');
+        saveData();
+        showFloatingText('👑 ¡Medalla de Embajador Desbloqueada! (+15% de puntos)', '#ffd200', window.innerWidth/2 - 150, 50);
+      } else {
+        showFloatingText('¡Gracias por compartir!', '#22c55e', window.innerWidth/2 - 80, 50);
+      }
+    }).catch(console.error);
+  } else {
+    // Fallback si no hay soporte nativo (ej. PC)
+    navigator.clipboard.writeText(shareText + ' ' + shareUrl).then(() => {
+      alert("¡Texto y enlace copiados al portapapeles! Compártelo con tus amigos.");
+      if (!appData.achievements) appData.achievements = [];
+      if (!appData.achievements.includes('ambassador')) {
+        appData.achievements.push('ambassador');
+        saveData();
+        showFloatingText('👑 ¡Medalla de Embajador Desbloqueada! (+15% de puntos)', '#ffd200', window.innerWidth/2 - 150, 50);
+      }
+    });
+  }
 }
