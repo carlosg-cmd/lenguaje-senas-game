@@ -101,10 +101,15 @@
   <div class="repaso-hdr">
     <div class="repaso-title">🏆 Top 10 Global</div>
     <div class="repaso-sub">Compara tus puntajes con jugadores de todo el mundo</div>
-    <div style="margin-top:12px; display:flex; justify-content:center; gap:8px;">
-      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(34, 197, 94, 0.2); color: #22c55e; border-color: rgba(34, 197, 94, 0.4);" onclick="fetchGlobalScores('easy')">Fácil</button>
-      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(234, 179, 8, 0.2); color: #eab308; border-color: rgba(234, 179, 8, 0.4);" onclick="fetchGlobalScores('medium')">Medio</button>
-      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="fetchGlobalScores('hard')">Difícil</button>
+    <div style="margin-top:12px; display:flex; justify-content:center; gap:8px; flex-wrap: wrap;">
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2);" onclick="fetchGlobalScores(null, 'classic')">🧩 Clásico</button>
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2);" onclick="fetchGlobalScores(null, 'words')">📝 Palabras</button>
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.2);" onclick="fetchGlobalScores(null, 'survival')">🔥 Supervivencia</button>
+    </div>
+    <div style="margin-top:8px; display:flex; justify-content:center; gap:8px;">
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(34, 197, 94, 0.2); color: #22c55e; border-color: rgba(34, 197, 94, 0.4);" onclick="fetchGlobalScores('easy', null)">Fácil</button>
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(234, 179, 8, 0.2); color: #eab308; border-color: rgba(234, 179, 8, 0.4);" onclick="fetchGlobalScores('medium', null)">Medio</button>
+      <button class="btn-cancel" style="padding: 4px 12px; font-size: 11px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" onclick="fetchGlobalScores('hard', null)">Difícil</button>
     </div>
   </div>
   <div style="max-width: 400px; margin: 20px auto; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px;">
@@ -129,6 +134,11 @@
         <div class="mcard-icon" style="font-size: 40px; margin-bottom: 10px;">📝</div>
         <div class="mcard-title" style="font-weight: 800; font-size: 18px; margin-bottom: 8px; color: #ffd200;">Modo Palabras</div>
         <div class="mcard-desc" style="font-size: 13px; color: #a0b4cc; line-height: 1.4;">Pon a prueba tu memoria deletreando palabras con animaciones 3D.</div>
+      </div>
+      <div class="mcard" onclick="selectModeGateway('survival')" style="border-color: #ef4444; background: linear-gradient(180deg, rgba(239,68,68,0.05) 0%, rgba(239,68,68,0.15) 100%); box-shadow: 0 4px 15px rgba(239,68,68,0.2);">
+        <div class="mcard-icon" style="font-size: 40px; margin-bottom: 10px; animation: pulse 2s infinite;">🔥</div>
+        <div class="mcard-title" style="font-weight: 800; font-size: 18px; margin-bottom: 8px; color: #ef4444;">Supervivencia</div>
+        <div class="mcard-desc" style="font-size: 13px; color: #a0b4cc; line-height: 1.4;">Modo infinito contra reloj. ¡Suma tiempo por cada acierto y compite por el récord mundial!</div>
       </div>
     </div>
   </div>

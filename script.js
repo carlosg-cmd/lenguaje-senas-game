@@ -90,6 +90,7 @@ function loadData() {
         parsed.letterStats = parsed.letterStats.abecedario || {};
       }
       if(!parsed.highscoresWords) parsed.highscoresWords = { easy: [], medium: [], hard: [] };
+      if(!parsed.highscoresSurvival) parsed.highscoresSurvival = { easy: [], medium: [], hard: [] };
       if(!parsed.lastMode) parsed.lastMode = 'classic';
       if(!parsed.maxLevel) parsed.maxLevel = 1;
       appData = { ...appData, ...parsed };
@@ -231,7 +232,7 @@ function showScreenMenu(id){
   
   closeMenu();
   if(id==='repaso') buildRepaso();
-  if(id==='leaderboard') fetchGlobalScores(diff);
+  if(id==='leaderboard') fetchGlobalScores(diff, gameMode);
   if(id==='game'){ clearInterval(timerInt); resetGame(); }
 }
 
@@ -288,8 +289,12 @@ function selectModeGateway(mode) {
   if(mode === 'classic') {
     renderLevelMap();
     document.getElementById('level-map-ov').classList.add('active');
-  } else {
+  } else if(mode === 'words') {
     gameMode = 'words';
+    saveData();
+    resetGame();
+  } else if(mode === 'survival') {
+    gameMode = 'survival';
     saveData();
     resetGame();
   }
@@ -361,7 +366,8 @@ function resetGame(){
   const hsEl = document.getElementById('hs');
   if(hsEl) {
       if(gameMode === 'classic') hsEl.textContent = (appData.highscores[diff][0] || 0);
-      else hsEl.textContent = (appData.highscoresWords[diff][0] || 0);
+      else if(gameMode === 'words') hsEl.textContent = (appData.highscoresWords[diff][0] || 0);
+      else hsEl.textContent = (appData.highscoresSurvival[diff][0] || 0);
   }
 
   if (gameMode === 'classic') {
@@ -394,7 +400,33 @@ function resetGame(){
     initNextWord();
     updateStats();
     startTimer();
+  } else if (gameMode === 'survival') {
+    document.getElementById('game-area').style.display = 'flex';
+    document.getElementById('word-area').style.display = 'none';
+    
+    timeLeft = 45; // Start with 45 seconds
+    queue = shuffle([...ALL]);
+    visible = queue.splice(0, VISIBLE);
+    lOrd = shuffle([...visible]);
+    rOrd = shuffle([...visible]);
+  
+    selL=null; selR=null;
+    clearLines();
+    updateStats();
+    renderCards(false);
+    startTimer();
   }
+}
+
+function showFloatingText(text, color, x, y) {
+  const el = document.createElement('div');
+  el.className = 'time-float';
+  el.textContent = text;
+  el.style.color = color;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1000);
 }
 
 /* ==============================
@@ -691,27 +723,47 @@ function tryMatch(){
     lc.classList.remove('selected'); lc.classList.add('matched');
     rc.classList.remove('selected'); rc.classList.add('matched');
     drawLine(matchedLetter, true);
-    score+=20; matchedCount++;
+    matchedCount++;
     selL=null; selR=null;
     appData.letterStats[matchedLetter].correct++;
-    saveData();
-    playMatch();
-    updateStats();
-    checkMotivation(matchedCount);
-
-    const levelLetters = LEVELS[currentLevel - 1] || ALL;
-    if(matchedCount===levelLetters.length){
-      clearInterval(timerInt); active=false;
-      setTimeout(()=>showResult(true),600);
-      confetti(); return;
+    
+    if (gameMode === 'survival') {
+      score += 20;
+      timeLeft += 3;
+      updateTD();
+      const rect = rc.getBoundingClientRect();
+      showFloatingText('+3s', '#22c55e', rect.left + rect.width/2 - 20, rect.top);
+      saveData();
+      playMatch();
+      updateStats();
+      setTimeout(()=>replacePair(matchedLetter), 500);
+    } else {
+      score += 20;
+      saveData();
+      playMatch();
+      updateStats();
+      checkMotivation(matchedCount);
+  
+      const levelLetters = LEVELS[currentLevel - 1] || ALL;
+      if(matchedCount===levelLetters.length){
+        clearInterval(timerInt); active=false;
+        setTimeout(()=>showResult(true),600);
+        confetti(); return;
+      }
+      setTimeout(()=>replacePair(matchedLetter), 500);
     }
-
-    // After matched pair disappears, replace & reshuffle rest
-    setTimeout(()=>replacePair(matchedLetter), 500);
 
   } else {
     lc.classList.remove('selected'); lc.classList.add('wrong');
     rc.classList.remove('selected'); rc.classList.add('wrong');
+    
+    if (gameMode === 'survival') {
+      timeLeft = Math.max(0, timeLeft - 5);
+      updateTD();
+      const rect = rc.getBoundingClientRect();
+      showFloatingText('-5s', '#ef4444', rect.left + rect.width/2 - 20, rect.top);
+    }
+    
     errors++; score=Math.max(0,score-5); updateStats();
     appData.letterStats[selL].wrong++;
     appData.letterStats[selR].wrong++;
@@ -728,6 +780,11 @@ function tryMatch(){
 function replacePair(matched){
   const idx = visible.indexOf(matched);
   if(idx !== -1) visible.splice(idx, 1);
+
+  if (gameMode === 'survival' && queue.length === 0) {
+    // Refill queue with random letters not currently visible
+    queue = shuffle([...ALL]).filter(l => !visible.includes(l));
+  }
 
   if(queue.length > 0){
     const next = queue.shift();
@@ -867,15 +924,15 @@ function showResult(won){
   
   let isNewRecord = false;
   if(won || score > 0) {
-    const scores = gameMode === 'classic' ? appData.highscores[diff] : appData.highscoresWords[diff];
+    const scoresArrayKey = gameMode === 'classic' ? 'highscores' : (gameMode === 'words' ? 'highscoresWords' : 'highscoresSurvival');
+    if (!appData[scoresArrayKey]) appData[scoresArrayKey] = { easy: [], medium: [], hard: [] };
+    const scores = appData[scoresArrayKey][diff];
     scores.push(score);
     scores.sort((a,b) => b-a);
     if(scores.length > 3) scores.pop();
     if(scores[0] === score && score > 0) isNewRecord = true;
     
-    if (gameMode === 'classic') appData.highscores[diff] = scores;
-    else appData.highscoresWords[diff] = scores;
-    
+    appData[scoresArrayKey][diff] = scores;
     saveData();
     
     // PUSH SCORE TO FIREBASE
@@ -913,14 +970,18 @@ function showResult(won){
     detailHtml = '✅ Letras completadas: <b>'+matchedCount+'/'+levelLetters.length+'</b><br>'+  
                  '❌ Errores: <b>'+errors+'</b><br>'+  
                  (won?'⏱ Tiempo: <b>'+timeStr+'</b>':'');
-  } else {
+  } else if (gameMode === 'words') {
     detailHtml = '📝 Palabras armadas: <b>'+wordsCompleted+'</b><br>'+  
+                 '❌ Errores: <b>'+errors+'</b>';
+  } else {
+    detailHtml = '🔥 Emparejamientos: <b>'+matchedCount+'</b><br>'+  
                  '❌ Errores: <b>'+errors+'</b>';
   }
   document.getElementById('rdetail').innerHTML = detailHtml;
 
   let hsHtml = '<b>Mejores Puntuaciones (' + (diff==='easy'?'Fácil':diff==='medium'?'Medio':'Difícil') + '):</b><br>';
-  const localScores = gameMode === 'classic' ? appData.highscores[diff] : appData.highscoresWords[diff];
+  const scoresArrayKey = gameMode === 'classic' ? 'highscores' : (gameMode === 'words' ? 'highscoresWords' : 'highscoresSurvival');
+  const localScores = appData[scoresArrayKey][diff] || [];
   localScores.forEach((s, i) => { hsHtml += `${i+1}. ${s} pts<br>`; });
   if(localScores.length === 0) hsHtml += 'Sin registros aún.';
   const hsEl = document.getElementById('rhighscores');
@@ -1095,18 +1156,26 @@ async function saveGlobalScore(nickname, score, difficulty, photoURL, uid, mode)
   }
 }
 
-async function fetchGlobalScores(d) {
+let lbCurrentDiff = 'easy';
+let lbCurrentMode = 'classic';
+
+async function fetchGlobalScores(d, m) {
+  if (d) lbCurrentDiff = d;
+  if (m) lbCurrentMode = m;
+  
   const lbTitle = document.getElementById('lb-title');
   const lbList = document.getElementById('lb-list');
   if(!lbTitle || !lbList) return;
 
-  lbTitle.textContent = "Cargando " + (d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil') + "...";
+  const modeName = lbCurrentMode === 'classic' ? 'Clásico' : (lbCurrentMode === 'words' ? 'Palabras' : 'Supervivencia');
+  const diffName = lbCurrentDiff === 'easy' ? 'Fácil' : (lbCurrentDiff === 'medium' ? 'Medio' : 'Difícil');
+  lbTitle.textContent = "Cargando " + modeName + " (" + diffName + ")...";
   lbList.innerHTML = "";
   
   try {
     const q = db.collection("highscores")
-      .where("difficulty", "==", d)
-      .where("mode", "==", gameMode)
+      .where("difficulty", "==", lbCurrentDiff)
+      .where("mode", "==", lbCurrentMode)
       .orderBy("score", "desc")
       .limit(10);
       
@@ -1128,8 +1197,7 @@ async function fetchGlobalScores(d) {
     });
     if (html === "") html = `<div style='text-align:center; color:#94a3b8; padding: 20px 0;'>Aún no hay récords.<br>¡Juega y sé el primero! 🚀</div>`;
     lbList.innerHTML = html;
-    const modeName = gameMode === 'classic' ? 'Clásico' : 'Palabras';
-    lbTitle.textContent = `🏆 Top 10 ${modeName} (${d==='easy'?'Fácil':d==='medium'?'Medio':'Difícil'})`;
+    lbTitle.textContent = `🏆 Top 10 ${modeName} (${diffName})`;
   } catch(e) {
     console.error(e);
     let msg = "Error al cargar récords.";

@@ -353,3 +353,21 @@ html,body{height:100%;max-height:100vh;overflow:hidden;font-family:Nunito,sans-s
   color: #fff;
   box-shadow: 0 0 20px #22c55e;
 }
+
+/* ==============================
+   SURVIVAL MODE CSS
+============================== */
+.time-float {
+  position: absolute;
+  font-size: 24px;
+  font-weight: 900;
+  pointer-events: none;
+  z-index: 1000;
+  animation: floatUp 1s ease-out forwards;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+}
