@@ -124,7 +124,7 @@ html,body{height:100%;max-height:100vh;overflow:hidden;font-family:Nunito,sans-s
 .repaso-stats { font-size: 9px; color: #a0b4cc; display: flex; gap: 4px; margin-top: 4px; width: 100%; justify-content: space-around; }
 
 /* ===== MODALS ===== */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:100;align-items:center;justify-content:center;}
+.overlay{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);z-index:100;align-items:center;justify-content:center;}
 .overlay.active{display:flex;}
 .modal{background:#1a2744;border:2px solid #f7971e;border-radius:18px;padding:20px 16px 16px;max-width:340px;width:92%;text-align:center;max-height:90vh;overflow-y:auto;}
 .modal h3{font-size:15px;font-weight:800;color:#ffd200;margin-bottom:7px;}
@@ -301,8 +301,8 @@ html,body{height:100%;max-height:100vh;overflow:hidden;font-family:Nunito,sans-s
    GATEWAY / CARDS (PHASE B)
 ============================== */
 .mcard {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(135deg, rgba(247,151,30,0.1), rgba(255,210,0,0.1));
+  border: 1px solid #f7971e;
   border-radius: 16px;
   padding: 25px;
   text-align: center;
@@ -311,9 +311,9 @@ html,body{height:100%;max-height:100vh;overflow:hidden;font-family:Nunito,sans-s
 }
 .mcard:hover {
   transform: translateY(-8px);
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.3);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  background: linear-gradient(135deg, rgba(247,151,30,0.2), rgba(255,210,0,0.2));
+  border-color: #ffd200;
+  box-shadow: 0 10px 25px rgba(247,151,30,0.4);
 }
 
 /* ==============================
