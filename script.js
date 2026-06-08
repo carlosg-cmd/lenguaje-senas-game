@@ -43,6 +43,8 @@ let matchedCount = 0;
 let errors = 0, score = 0;
 let timerInt = null, timeLeft = 0;
 let active = false;
+let currentCombo = 0;
+let maxCombo = 0;
 
 /* --- LEVEL STATE --- */
 const LEVELS = [
@@ -389,7 +391,7 @@ function setGameMode(mode, el) {
 function resetGame(){
   clearInterval(timerInt);
   document.getElementById('result-ov').classList.remove('active');
-  matchedCount=0; errors=0; score=0; active=true;
+  matchedCount=0; errors=0; score=0; active=true; currentCombo=0;
 
   const hsEl = document.getElementById('hs');
   if(hsEl) {
@@ -592,6 +594,14 @@ function updateTD(){
   const m=Math.floor(timeLeft/60), s=timeLeft%60;
   el.textContent = m>0 ? m+'m '+String(s).padStart(2,'0')+'s' : timeLeft+'s';
   el.className=timeLeft<=15?'val timer-warn':'val';
+  
+  if (gameMode === 'survival' && timeLeft <= 10 && timeLeft > 0) {
+      document.body.classList.add('danger-mode');
+      // Latido de corazón
+      playSound(150, 'sine', 0.2, 0.2);
+  } else {
+      document.body.classList.remove('danger-mode');
+  }
 }
 
 /* ==============================
@@ -755,8 +765,29 @@ function tryMatch(){
     selL=null; selR=null;
     appData.letterStats[matchedLetter].correct++;
     
+    currentCombo++;
+    if(currentCombo > maxCombo) maxCombo = currentCombo;
+    
+    let multiplier = 1;
+    if (currentCombo >= 10) multiplier = 4;
+    else if (currentCombo >= 5) multiplier = 3;
+    else if (currentCombo >= 3) multiplier = 2;
+    
+    const pointsGained = 20 * multiplier;
+    
+    if (currentCombo >= 3) {
+      const rect = lc.getBoundingClientRect();
+      showFloatingText(currentCombo + ' Rachas! x' + multiplier, '#ffd200', rect.left, rect.top - 20);
+      
+      // Añadir brillo a la pantalla si el combo es alto
+      if (currentCombo >= 5) {
+        document.body.style.boxShadow = 'inset 0 0 50px rgba(247, 151, 30, 0.4)';
+        setTimeout(() => document.body.style.boxShadow = 'none', 800);
+      }
+    }
+    
     if (gameMode === 'survival') {
-      score += 20;
+      score += pointsGained;
       timeLeft += 3;
       updateTD();
       const rect = rc.getBoundingClientRect();
@@ -766,7 +797,7 @@ function tryMatch(){
       updateStats();
       setTimeout(()=>replacePair(matchedLetter), 500);
     } else {
-      score += 20;
+      score += pointsGained;
       saveData();
       playMatch();
       updateStats();
@@ -784,6 +815,8 @@ function tryMatch(){
   } else {
     lc.classList.remove('selected'); lc.classList.add('wrong');
     rc.classList.remove('selected'); rc.classList.add('wrong');
+    
+    currentCombo = 0; // Se pierde el combo al fallar
     
     if (gameMode === 'survival') {
       timeLeft = Math.max(0, timeLeft - 5);
