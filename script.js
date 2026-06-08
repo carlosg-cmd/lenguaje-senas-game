@@ -75,6 +75,7 @@ let appData = {
   maxLevel: 1,
   highscores: { easy: [], medium: [], hard: [] },
   highscoresWords: { easy: [], medium: [], hard: [] }, // New table for words mode
+  highscoresSurvival: { easy: [], medium: [], hard: [] }, // New table for survival mode
   letterStats: {}
 };
 ALL.forEach(l => appData.letterStats[l] = { correct: 0, wrong: 0, hints: 0 });
