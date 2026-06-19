@@ -161,10 +161,7 @@ bgMusic.volume = 0.15;
 function initAudio() {
   if(!audioCtx) audioCtx = new AudioContext();
   if(audioCtx.state === 'suspended') audioCtx.resume();
-  
-  if(soundOn && bgMusic.paused) {
-    bgMusic.play().catch(e => console.log('BGM prevented:', e));
-  }
+  // Retiramos bgMusic.play() de aquí para que solo suene al momento del GO
 }
 
 function toggleSound() {
@@ -173,7 +170,10 @@ function toggleSound() {
   saveData();
   if(soundOn) {
     playSound(440, 'sine', 0.1);
-    bgMusic.play().catch(e => console.log('BGM prevented:', e));
+    // Solo reproducir si estamos en el juego (active == true)
+    if(active) {
+      bgMusic.play().catch(e => console.log('BGM prevented:', e));
+    }
   } else {
     bgMusic.pause();
   }
@@ -507,24 +507,31 @@ function startPlayCountdown() {
   if(!btn) return;
   
   btn.disabled = true;
-  let count = 3;
-  btn.textContent = count;
+  let progress = 0;
   
   const intv = setInterval(() => {
-    count--;
-    if(count > 0) {
-      btn.textContent = count;
-    } else if(count === 0) {
-      btn.textContent = "¡GO!";
-      btn.style.background = "#22c55e"; // verde
-      btn.style.color = "#ffffff";
+    progress += 5; // +5% cada 25ms => llega a 100% en 500ms
+    if (progress <= 100) {
+      btn.textContent = `Cargando... ${progress}%`;
+      btn.style.background = `linear-gradient(90deg, #22c55e ${progress}%, rgba(255,255,255,0.1) ${progress}%)`;
     } else {
       clearInterval(intv);
-      document.getElementById('play-btn-container').style.display = 'none';
-      active = true;
-      startTimer();
+      btn.textContent = "¡GO!";
+      btn.style.background = "#22c55e"; // verde final
+      btn.style.color = "#ffffff";
+      
+      // Iniciar la música exactamente aquí
+      if(soundOn && bgMusic.paused) {
+        bgMusic.play().catch(e => console.log('BGM prevented:', e));
+      }
+      
+      setTimeout(() => {
+        document.getElementById('play-btn-container').style.display = 'none';
+        active = true;
+        startTimer();
+      }, 400); // Muestra el GO durante 400ms y luego arranca el juego
     }
-  }, 1000);
+  }, 25);
 }
 
 function showFloatingText(text, color, x, y) {
@@ -712,7 +719,7 @@ function startTimer(){
         appData.stats.maxSurvivalTime = timeSurvived;
     }
     updateTD();
-    if(timeLeft<=0){ clearInterval(timerInt); active=false; showResult(false); }
+    if(timeLeft<=0){ clearInterval(timerInt); active=false; if(bgMusic) bgMusic.pause(); showResult(false); }
   },1000);
 }
 
