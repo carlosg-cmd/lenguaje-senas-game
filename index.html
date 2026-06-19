@@ -21,7 +21,10 @@
 
 <!-- TOP BAR WITH DROPDOWN -->
 <div class="topbar">
-  <div class="topbar-title">✋ Señas & Letras</div>
+  <div class="topbar-title" style="display: flex; align-items: center;">
+    <button id="global-back-btn" class="icon-btn" style="display:none; background:transparent; border:none; color:#ffd200; font-size:22px; padding:0; margin-right:8px; cursor:pointer;" onclick="backToModeSelect()" title="Volver al menú">🔙</button>
+    ✋ Señas & Letras
+  </div>
   <div style="display: flex; gap: 8px; align-items: center;">
     <div id="user-profile" style="display:none; align-items: center; gap: 6px; margin-right: 4px;">
         <img id="user-avatar" src="" style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #f7971e;" alt="Avatar">

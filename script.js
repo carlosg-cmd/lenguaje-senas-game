@@ -254,6 +254,10 @@ function showScreenMenu(id){
   if(id==='repaso') buildRepaso();
   if(id==='leaderboard') fetchGlobalScores(diff, gameMode);
   if(id==='game'){ clearInterval(timerInt); resetGame(); }
+  
+  if (typeof updateBackButtonVisibility === 'function') {
+      updateBackButtonVisibility();
+  }
 }
 
 /* ==============================
@@ -303,6 +307,13 @@ function clearStats() {
 /* ==============================
    MODE & LEVEL SELECT
 ============================== */
+function updateBackButtonVisibility() {
+  const btn = document.getElementById('global-back-btn');
+  if(!btn) return;
+  const isMenu = document.getElementById('mode-select-ov').classList.contains('active');
+  btn.style.display = isMenu ? 'none' : 'block';
+}
+
 function selectModeGateway(mode) {
   document.getElementById('mode-select-ov').classList.remove('active');
   showScreenMenu('game');
@@ -318,12 +329,14 @@ function selectModeGateway(mode) {
     saveData();
     resetGame();
   }
+  updateBackButtonVisibility();
 }
 
 function backToModeSelect() {
   showScreenMenu('game');
   document.getElementById('level-map-ov').classList.remove('active');
   document.getElementById('mode-select-ov').classList.add('active');
+  updateBackButtonVisibility();
 }
 
 function renderLevelMap() {
