@@ -1,4 +1,4 @@
-const CACHE_NAME = 'senas-letras-v10';
+const CACHE_NAME = 'senas-letras-v11';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -6,6 +6,10 @@ const ASSETS_TO_CACHE = [
   './script.js',
   './manifest.json',
   './assets/icon.png',
+  './assets/bgm.mp3',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
+  'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
+  'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js',
   // Cache all sign images
   './assets/signs/A.png',
   './assets/signs/B.png',
