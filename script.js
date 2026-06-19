@@ -1260,8 +1260,19 @@ function playIntroAnimation() {
   setTimeout(() => {
     introOv.style.opacity = '0';
     introOv.style.visibility = 'hidden';
-    setTimeout(() => { introOv.style.display = 'none'; }, 800);
+    setTimeout(() => { 
+      introOv.style.display = 'none'; 
+      if(!appData.tutorialSeen) {
+        document.getElementById('welcome-ov').classList.add('active');
+      }
+    }, 800);
   }, 2200);
+}
+
+function closeTutorial() {
+  document.getElementById('welcome-ov').classList.remove('active');
+  appData.tutorialSeen = true;
+  saveData();
 }
 
 // Llamar inmediatamente

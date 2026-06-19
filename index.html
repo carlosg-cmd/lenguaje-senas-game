@@ -165,9 +165,39 @@
         <div class="mcard-desc" style="font-size: 9px; color: #a0b4cc; line-height: 1.1;">Reto mundial 24 hrs.</div>
       </div>
     </div>
+    </div>
     <div style="margin-top: 20px; text-align: center;">
       <button class="btn-cancel" style="padding: 6px 12px; font-size: 11px; background: transparent; border: none; color: #a0b4cc; text-decoration: underline;" onclick="showCredits()">ℹ️ Acerca de esta aplicación</button>
     </div>
+  </div>
+</div>
+
+<!-- WELCOME / TUTORIAL OVERLAY -->
+<div class="overlay" id="welcome-ov" style="z-index: 9999;">
+  <div class="modal" style="text-align: center; max-width: 450px;">
+    <h2 style="color: #ffd200; font-size: 26px; margin-bottom: 10px;">¡Bienvenido a Señas & Letras! 👋</h2>
+    <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
+      <p style="color: #e2e8f0; font-size: 14px; margin-bottom: 15px; line-height: 1.5;">
+        Este juego está diseñado para ayudarte a aprender y practicar el <strong>abecedario en Lengua de Señas</strong> de manera divertida.
+      </p>
+      <div style="color: #a0b4cc; font-size: 13px; margin-bottom: 10px;">
+        <strong>🎮 ¿Cómo jugar?</strong>
+        <ul style="margin-top: 5px; margin-left: 20px; line-height: 1.6;">
+          <li>Observa la imagen de la mano que aparece en el centro.</li>
+          <li>Selecciona la letra correcta del abecedario que corresponda a esa seña.</li>
+          <li>Gana puntos por cada acierto, ¡pero ten cuidado con el reloj en dificultades altas!</li>
+        </ul>
+      </div>
+      <div style="color: #a0b4cc; font-size: 13px;">
+        <strong>🏆 Modos de Juego:</strong>
+        <ul style="margin-top: 5px; margin-left: 20px; line-height: 1.6;">
+          <li><strong>Clásico:</strong> Aprende por niveles, de fácil a difícil.</li>
+          <li><strong>Palabras:</strong> Deletrea palabras completas con señas.</li>
+          <li><strong>Supervivencia:</strong> Juega contra el tiempo infinito.</li>
+        </ul>
+      </div>
+    </div>
+    <button class="btn-submit" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold;" onclick="closeTutorial()">¡Empezar a Jugar! 🚀</button>
   </div>
 </div>
 
