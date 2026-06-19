@@ -1610,6 +1610,29 @@ function exitApp() {
   document.getElementById('exit-ov').classList.add('active');
 }
 
+function shareApp() {
+  const shareText = '¡Estoy aprendiendo y jugando con Señas & Letras! ✋\n\nÚnete y practica el abecedario en lengua de señas de forma divertida. Juega gratis aquí:';
+  const shareUrl = 'https://carlosg-cmd.github.io/lenguaje-senas-game/';
+  
+  if (navigator.share) {
+    navigator.share({
+      title: 'Señas & Letras',
+      text: shareText,
+      url: shareUrl
+    }).catch(console.error);
+  } else {
+    // Fallback si no hay soporte nativo (ej. PC)
+    navigator.clipboard.writeText(shareText + ' ' + shareUrl).then(() => {
+      showFloatingText('Enlace copiado al portapapeles', '#3b82f6', window.innerWidth/2 - 100, 50);
+      if (!appData.achievements) appData.achievements = [];
+      if (!appData.achievements.includes('ambassador')) {
+        appData.achievements.push('ambassador');
+        saveData();
+      }
+    }).catch(console.error);
+  }
+}
+
 function shareScore() {
   const shareText = `¡Acabo de anotar ${score} puntos en el modo ${gameMode === 'survival' ? 'Supervivencia' : gameMode === 'words' ? 'Palabras' : 'Clásico'} de Señas & Letras! 👑\n\n¿Crees que puedes superar mi récord? Juega gratis aquí:`;
   const shareUrl = 'https://carlosg-cmd.github.io/lenguaje-senas-game/';
