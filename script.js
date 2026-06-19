@@ -399,7 +399,7 @@ function setGameMode(mode, el) {
 function resetGame(){
   clearInterval(timerInt);
   document.getElementById('result-ov').classList.remove('active');
-  matchedCount=0; errors=0; score=0; active=false; currentCombo=0; timeSurvived=0;
+  matchedCount=0; errors=0; score=0; active=true; currentCombo=0; timeSurvived=0;
 
   const hsEl = document.getElementById('hs');
   if(hsEl) {
@@ -426,6 +426,7 @@ function resetGame(){
     clearLines();
     updateStats();
     renderCards(false);
+    startTimer();
   } else if (gameMode === 'words' || gameMode === 'daily') {
     document.getElementById('game-area').style.display = 'none';
     document.getElementById('word-area').style.display = 'flex';
@@ -448,6 +449,7 @@ function resetGame(){
     
     initNextWord();
     updateStats();
+    startTimer();
   } else if (gameMode === 'survival') {
     document.getElementById('game-area').style.display = 'flex';
     document.getElementById('word-area').style.display = 'none';
@@ -462,47 +464,8 @@ function resetGame(){
     clearLines();
     updateStats();
     renderCards(false);
+    startTimer();
   }
-
-  showReadyCountdown();
-}
-
-function showReadyCountdown() {
-  const readyOv = document.getElementById('ready-ov');
-  const readyContent = document.getElementById('ready-content');
-  if(!readyOv || !readyContent) return;
-  
-  readyOv.classList.add('active');
-  readyContent.innerHTML = '¡Toca para Empezar!';
-  readyContent.style.animation = 'pulse 1.5s infinite';
-  readyContent.style.cursor = 'pointer';
-  readyContent.onclick = startReadyCountdown;
-}
-
-function startReadyCountdown() {
-  const readyOv = document.getElementById('ready-ov');
-  const content = document.getElementById('ready-content');
-  
-  content.style.animation = 'none';
-  content.style.cursor = 'default';
-  content.onclick = null;
-  
-  let count = 3;
-  content.textContent = count;
-  
-  const intv = setInterval(() => {
-    count--;
-    if(count > 0) {
-      content.textContent = count;
-    } else if(count === 0) {
-      content.textContent = "¡GO!";
-    } else {
-      clearInterval(intv);
-      readyOv.classList.remove('active');
-      active = true;
-      startTimer();
-    }
-  }, 1000);
 }
 
 function showFloatingText(text, color, x, y) {
