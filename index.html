@@ -97,7 +97,7 @@
   </div>
 
   <div class="footer">
-    Desarrollado por <strong style="color:rgba(255,255,255,0.45);">Carlos Andrés Jiménez - Elias Rojas </strong> — Tecnólogo en Desarrollo de Software &nbsp;|&nbsp; Ficha 3066035 - Tranversal de Comunicacion - Año 2026
+    &copy; 2026 Todos los derechos reservados. Desarrollado por <strong style="color:rgba(255,255,255,0.45);">Carlos Andrés Jiménez y Elias Rojas</strong> — Tecnólogo en Desarrollo de Software | Ficha 3066035 - Transversal de Comunicación
   </div>
 </div>
 <div class="screen" id="screen-repaso">
@@ -146,36 +146,35 @@
 
 <!-- MODE SELECT OVERLAY -->
 <div class="overlay" id="mode-select-ov">
-  <div class="mode-select-container" style="max-width: 600px; width: 90%; background: #1a2744; border: 2px solid #f7971e; border-radius: 20px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-    <button class="btn-cancel" style="position:absolute; top: 15px; left: 15px; padding: 6px 12px; font-size: 13px; z-index: 10;" onclick="showProfile()">🏅 Mi Perfil</button>
+  <div class="mode-select-container" style="max-width: 600px; width: 90%; background: #1a2744; border: 2px solid #39A900; border-radius: 20px; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center;">
+    <button class="btn-cancel" style="position:absolute; top: 15px; left: 15px; padding: 6px 12px; font-size: 13px; z-index: 10; border-color: #39A900; color: #39A900;" onclick="showProfile()">🏅 Mi Perfil</button>
     <button class="btn-cancel" style="position:absolute; top: 15px; right: 15px; padding: 6px 12px; font-size: 13px; z-index: 10; background: #ef4444; color: white;" onclick="exitApp()">🚪 Salir</button>
-    <h2 style="color: #ffd200; margin-bottom: 30px; font-size: 24px; text-align: center; margin-top: 10px;">¿Qué quieres jugar hoy?</h2>
-    <div class="mode-cards" style="display: flex; flex-direction: row; gap: 8px; justify-content: space-between; width: 100%;">
+    <h2 style="color: #39A900; margin-bottom: 30px; font-size: 24px; text-align: center; margin-top: 20px;">¿Qué quieres jugar hoy?</h2>
+    
+    <div class="mode-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; width: 100%; margin-bottom: 20px;">
       <div class="mcard" onclick="selectModeGateway('classic')">
-        <div class="mcard-icon" style="font-size: 24px; margin-bottom: 4px;">🧩</div>
-        <div class="mcard-title" style="font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #ffd200;">Clásico</div>
-        <div class="mcard-desc" style="font-size: 9px; color: #a0b4cc; line-height: 1.1;">Abecedario en 5 niveles.</div>
+        <div class="mcard-icon" style="font-size: 28px; margin-bottom: 8px;">🧩</div>
+        <div class="mcard-title" style="font-weight: 800; font-size: 12px; margin-bottom: 2px; color: #ffd200;">Clásico</div>
+        <div class="mcard-desc" style="font-size: 10px; color: #a0b4cc; line-height: 1.2;">Abecedario en 5 niveles.</div>
       </div>
       <div class="mcard" onclick="selectModeGateway('words')">
-        <div class="mcard-icon" style="font-size: 24px; margin-bottom: 4px;">📝</div>
-        <div class="mcard-title" style="font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #ffd200;">Palabras</div>
-        <div class="mcard-desc" style="font-size: 9px; color: #a0b4cc; line-height: 1.1;">Deletrea con animaciones.</div>
+        <div class="mcard-icon" style="font-size: 28px; margin-bottom: 8px;">📝</div>
+        <div class="mcard-title" style="font-weight: 800; font-size: 12px; margin-bottom: 2px; color: #ffd200;">Palabras</div>
+        <div class="mcard-desc" style="font-size: 10px; color: #a0b4cc; line-height: 1.2;">Deletrea con animaciones.</div>
       </div>
       <div class="mcard" onclick="selectModeGateway('survival')" style="border-color: #ef4444; background: linear-gradient(180deg, rgba(239,68,68,0.05) 0%, rgba(239,68,68,0.15) 100%); box-shadow: 0 4px 15px rgba(239,68,68,0.2);">
-        <div class="mcard-icon" style="font-size: 24px; margin-bottom: 4px; animation: pulse 2s infinite;">🔥</div>
-        <div class="mcard-title" style="font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #ef4444;">Superviv.</div>
-        <div class="mcard-desc" style="font-size: 9px; color: #a0b4cc; line-height: 1.1;">Infinito contra el reloj.</div>
+        <div class="mcard-icon" style="font-size: 28px; margin-bottom: 8px; animation: pulse 2s infinite;">🔥</div>
+        <div class="mcard-title" style="font-weight: 800; font-size: 12px; margin-bottom: 2px; color: #ef4444;">Superviv.</div>
+        <div class="mcard-desc" style="font-size: 10px; color: #a0b4cc; line-height: 1.2;">Infinito contra el reloj.</div>
       </div>
       <div class="mcard" onclick="selectModeGateway('daily')" style="border-color: #a855f7; background: linear-gradient(180deg, rgba(168,85,247,0.05) 0%, rgba(168,85,247,0.15) 100%); box-shadow: 0 4px 15px rgba(168,85,247,0.2);">
-        <div class="mcard-icon" style="font-size: 24px; margin-bottom: 4px;">📅</div>
-        <div class="mcard-title" style="font-weight: 800; font-size: 11px; margin-bottom: 2px; color: #c084fc;">Diario</div>
-        <div class="mcard-desc" style="font-size: 9px; color: #a0b4cc; line-height: 1.1;">Reto mundial 24 hrs.</div>
+        <div class="mcard-icon" style="font-size: 28px; margin-bottom: 8px;">📅</div>
+        <div class="mcard-title" style="font-weight: 800; font-size: 12px; margin-bottom: 2px; color: #c084fc;">Diario</div>
+        <div class="mcard-desc" style="font-size: 10px; color: #a0b4cc; line-height: 1.2;">Reto mundial 24 hrs.</div>
       </div>
     </div>
-    </div>
-    <div style="margin-top: 20px; text-align: center;">
-      <button class="btn-cancel" style="padding: 6px 12px; font-size: 11px; background: transparent; border: none; color: #a0b4cc; text-decoration: underline;" onclick="showCredits()">ℹ️ Acerca de esta aplicación</button>
-    </div>
+    
+    <button class="btn-cancel" style="padding: 6px 12px; font-size: 12px; background: transparent; border: none; color: #a0b4cc; text-decoration: underline; cursor: pointer;" onclick="showCredits()">ℹ️ Acerca de esta aplicación</button>
   </div>
 </div>
 
