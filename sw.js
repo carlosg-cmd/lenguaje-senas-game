@@ -1,11 +1,11 @@
-const CACHE_NAME = 'senas-letras-v17';
+const CACHE_NAME = 'senas-letras-v18';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './script.js',
   './manifest.json',
-  './assets/icon.png',
+  './assets/logo.png',
   './assets/bgm.mp3',
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js',
