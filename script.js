@@ -399,7 +399,7 @@ function setGameMode(mode, el) {
 function resetGame(){
   clearInterval(timerInt);
   document.getElementById('result-ov').classList.remove('active');
-  matchedCount=0; errors=0; score=0; active=true; currentCombo=0; timeSurvived=0;
+  matchedCount=0; errors=0; score=0; active=false; currentCombo=0; timeSurvived=0;
 
   const hsEl = document.getElementById('hs');
   if(hsEl) {
@@ -426,7 +426,6 @@ function resetGame(){
     clearLines();
     updateStats();
     renderCards(false);
-    startTimer();
   } else if (gameMode === 'words' || gameMode === 'daily') {
     document.getElementById('game-area').style.display = 'none';
     document.getElementById('word-area').style.display = 'flex';
@@ -449,7 +448,6 @@ function resetGame(){
     
     initNextWord();
     updateStats();
-    startTimer();
   } else if (gameMode === 'survival') {
     document.getElementById('game-area').style.display = 'flex';
     document.getElementById('word-area').style.display = 'none';
@@ -464,8 +462,43 @@ function resetGame(){
     clearLines();
     updateStats();
     renderCards(false);
-    startTimer();
   }
+
+  // Prepara el botón de jugar
+  const btnContainer = document.getElementById('play-btn-container');
+  const btn = document.getElementById('play-btn');
+  if(btnContainer && btn) {
+    btnContainer.style.display = 'block';
+    btn.textContent = 'JUGAR';
+    btn.disabled = false;
+    btn.style.background = ''; // resetear por si acaso
+    btn.style.color = '';
+  }
+}
+
+function startPlayCountdown() {
+  const btn = document.getElementById('play-btn');
+  if(!btn) return;
+  
+  btn.disabled = true;
+  let count = 3;
+  btn.textContent = count;
+  
+  const intv = setInterval(() => {
+    count--;
+    if(count > 0) {
+      btn.textContent = count;
+    } else if(count === 0) {
+      btn.textContent = "¡GO!";
+      btn.style.background = "#22c55e"; // verde
+      btn.style.color = "#ffffff";
+    } else {
+      clearInterval(intv);
+      document.getElementById('play-btn-container').style.display = 'none';
+      active = true;
+      startTimer();
+    }
+  }, 1000);
 }
 
 function showFloatingText(text, color, x, y) {
