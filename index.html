@@ -15,7 +15,27 @@
   <div id="intro-cards-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
   <div id="intro-logo" style="z-index: 10; transform: scale(0); opacity: 0; transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1); text-align: center;">
     <img src="assets/icon.png" style="width: 150px; height: 150px; border-radius: 35px; box-shadow: 0 10px 40px rgba(255,210,0,0.5); margin-bottom: 20px;" alt="Logo Señas y Letras">
-    <h1 style="color: #ffd200; font-size: 42px; margin: 0; text-shadow: 0 4px 20px rgba(255, 210, 0, 0.4);">Señas & Letras</h1>
+  </div>
+</div>
+
+<!-- INSTALL OVERLAY -->
+<div class="overlay" id="install-ov" style="z-index: 9999;">
+  <div class="modal" style="text-align: center; max-width: 450px;">
+    <h2 style="color: #22c55e; margin-bottom: 15px;">📲 Instalar Aplicación</h2>
+    <p style="color: #a0b4cc; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">Lleva el juego siempre contigo.</p>
+    
+    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: left;">
+      <h3 style="color: #ffd200; font-size: 16px; margin-bottom: 8px;">🤖 En Android</h3>
+      <p style="color: #e2e8f0; font-size: 13px; margin: 0;">Presiona el botón verde "Instalar Ahora" que aparece abajo.</p>
+    </div>
+
+    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 25px; text-align: left;">
+      <h3 style="color: #ffd200; font-size: 16px; margin-bottom: 8px;">🍎 En iPhone (iOS)</h3>
+      <p style="color: #e2e8f0; font-size: 13px; margin: 0;">1. Abre este enlace en <strong>Safari</strong>.<br>2. Toca el botón <strong>Compartir</strong> (el ícono del cuadro con la flecha).<br>3. Selecciona <strong>"Agregar a la pantalla de inicio"</strong>.</p>
+    </div>
+
+    <button id="btn-install-now" class="btn-submit" style="background: #22c55e; padding: 10px 30px; font-size: 16px; font-weight: bold; display: none; width: 100%; margin-bottom: 10px;" onclick="installPWA()">Instalar Ahora</button>
+    <button class="btn-cancel" style="width: 100%; padding: 10px;" onclick="document.getElementById('install-ov').classList.remove('active');">Cerrar</button>
   </div>
 </div>
 
@@ -41,7 +61,7 @@
         <button class="dropdown-item" id="nav-leaderboard-btn" onclick="showScreenMenu('leaderboard')">🏆 Récords Globales</button>
         <div class="dropdown-sep"></div>
         <button class="dropdown-item" id="btn-share" style="color: #a855f7;" onclick="shareApp()">📢 Compartir (+15% pts)</button>
-        <button class="dropdown-item" id="btn-install" style="display:none; color:#22c55e;" onclick="installPWA()">📲 Instalar App</button>
+        <button class="dropdown-item" id="btn-install" style="color:#22c55e;" onclick="showInstallOverlay()">📲 Instalar App</button>
         <button class="dropdown-item" id="btn-login" onclick="loginWithGoogle()">👤 Iniciar Sesión</button>
         <button class="dropdown-item" id="btn-logout" style="display:none; color:#ef4444;" onclick="logout()">🚪 Cerrar Sesión</button>
         <button class="dropdown-item" id="btn-exit" style="color: #ef4444;" onclick="exitApp()">🛑 Salir del Juego</button>

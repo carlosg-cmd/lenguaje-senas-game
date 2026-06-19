@@ -1349,16 +1349,23 @@ let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  const btn = document.getElementById('btn-install');
-  if(btn) btn.style.display = 'flex';
+  // Mostrar el botón "Instalar Ahora" dentro del modal solo si está disponible el PWA nativo
+  const btnNow = document.getElementById('btn-install-now');
+  if(btnNow) btnNow.style.display = 'block';
 });
+
+function showInstallOverlay() {
+  document.querySelectorAll('.overlay').forEach(ov => ov.classList.remove('active'));
+  document.getElementById('install-ov').classList.add('active');
+}
 
 function installPWA() {
   if (deferredPrompt) {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       deferredPrompt = null;
-      document.getElementById('btn-install').style.display = 'none';
+      document.getElementById('btn-install-now').style.display = 'none';
+      document.getElementById('install-ov').classList.remove('active');
     });
   }
 }
