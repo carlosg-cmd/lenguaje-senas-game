@@ -461,7 +461,7 @@ function resetGame(){
     if (gameMode === 'daily') {
         const todayStr = new Date().toDateString();
         if (appData.lastDailyDate === todayStr) {
-            alert('¡Ya completaste el Reto Diario de hoy! Vuelve mañana para un nuevo desafío.');
+            showCustomAlert('Reto Completado', '¡Ya completaste el Reto Diario de hoy! Vuelve mañana para un nuevo desafío.', '📅');
             backToModeSelect();
             return;
         }
@@ -1142,7 +1142,7 @@ function showResult(won){
         if(currentUser) {
             saveGlobalScore(currentUser.displayName, score, diff, currentUser.photoURL, currentUser.uid, gameMode);
         } else {
-            alert(`¡Conseguiste ${score} puntos! Tu récord se guardó localmente. Inicia sesión desde el menú para competir en el Top 10 Global.`);
+            showCustomAlert('¡Nuevo Récord!', `¡Conseguiste ${score} puntos! Tu récord se guardó localmente. Inicia sesión desde el menú para competir en el Top 10 Global.`, '🏆', true);
         }
     }, 500);
   }
@@ -1506,7 +1506,7 @@ function loginWithGoogle() {
       backToModeSelect();
     }).catch((error) => {
       console.error('Login error:', error);
-      alert('Error al iniciar sesión: ' + error.message);
+      showCustomAlert('Error', 'Error al iniciar sesión: ' + error.message, '❌');
     });
 }
 
@@ -1517,7 +1517,7 @@ function gatewayLogin() {
       document.getElementById('login-ov').classList.remove('active');
       backToModeSelect();
     }).catch((error) => {
-      alert('Error al iniciar sesión: ' + error.message);
+      showCustomAlert('Error', 'Error al iniciar sesión: ' + error.message, '❌');
     });
 }
 
@@ -1670,13 +1670,31 @@ function shareScore() {
   } else {
     // Fallback si no hay soporte nativo (ej. PC)
     navigator.clipboard.writeText(shareText + ' ' + shareUrl).then(() => {
-      alert("¡Texto y enlace copiados al portapapeles! Compártelo con tus amigos.");
+      showCustomAlert('¡Enlace Copiado!', '¡Texto y enlace copiados al portapapeles! Compártelo con tus amigos.', '📢', true);
       if (!appData.achievements) appData.achievements = [];
       if (!appData.achievements.includes('ambassador')) {
         appData.achievements.push('ambassador');
         saveData();
         showFloatingText('👑 ¡Medalla de Embajador Desbloqueada! (+15% de puntos)', '#ffd200', window.innerWidth/2 - 150, 50);
       }
+    }).catch(err => {
+      console.log('Error al copiar al portapapeles', err);
     });
   }
+}
+
+// CUSTOM ALERTS
+function showCustomAlert(title, message, icon='⭐', showConfetti=false) {
+  const ov = document.getElementById('custom-alert-ov');
+  if(!ov) return;
+  document.getElementById('custom-alert-title').textContent = title;
+  document.getElementById('custom-alert-msg').textContent = message;
+  document.getElementById('custom-alert-icon').textContent = icon;
+  ov.classList.add('active');
+  if(showConfetti) createConfetti(60);
+}
+
+function closeCustomAlert() {
+  const ov = document.getElementById('custom-alert-ov');
+  if(ov) ov.classList.remove('active');
 }
