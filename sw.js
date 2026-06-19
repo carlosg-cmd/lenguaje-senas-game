@@ -1,4 +1,4 @@
-const CACHE_NAME = 'senas-letras-v7';
+const CACHE_NAME = 'senas-letras-v8';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
