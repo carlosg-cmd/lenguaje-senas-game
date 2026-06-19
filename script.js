@@ -154,16 +154,29 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let soundOn = true;
 
+const bgMusic = new Audio('assets/bgm.mp3');
+bgMusic.loop = true;
+bgMusic.volume = 0.15;
+
 function initAudio() {
   if(!audioCtx) audioCtx = new AudioContext();
   if(audioCtx.state === 'suspended') audioCtx.resume();
+  
+  if(soundOn && bgMusic.paused) {
+    bgMusic.play().catch(e => console.log('BGM prevented:', e));
+  }
 }
 
 function toggleSound() {
   soundOn = !soundOn;
   updateSoundIcon();
   saveData();
-  if(soundOn) playSound(440, 'sine', 0.1);
+  if(soundOn) {
+    playSound(440, 'sine', 0.1);
+    bgMusic.play().catch(e => console.log('BGM prevented:', e));
+  } else {
+    bgMusic.pause();
+  }
 }
 
 function updateSoundIcon() {
